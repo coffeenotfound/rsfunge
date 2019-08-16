@@ -1,0 +1,10 @@
+[package]
+name = "rsfunge"
+version = "0.1.0"
+authors = ["katzer"]
+edition = "2018"
+
+[dependencies]
+typenum = "1.10.0"
+clap = "2.33.0"
+lazy_static = "1.3.0"
