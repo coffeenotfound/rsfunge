@@ -1,13 +1,6 @@
-use clap::{App, Arg};
-use std::collections::HashMap;
-use std::fmt::Display;
+use clap::{self, Arg};
 use std::env;
-use std::error::Error;
-
 use crate::utils;
-use crate::dialect::FungeDialect;
-//use crate::error;
-//use crate::error::GenericError;
 
 //pub type ArgumentError = GenericError<S>;
 
@@ -23,8 +16,7 @@ pub fn start() {
 			.takes_value(true))
 		.arg(Arg::with_name("source-file")
 			.index(1)
-			.required(true))
-	;
+			.required(true));
 	
 	// Evalutate cli invocation
 	let evaluation_res = (|| {
@@ -43,4 +35,6 @@ pub fn start() {
 		
 		let source_file = matches.value_of("source-file");
 	})();
+	
+	// Setup interpreter
 }
