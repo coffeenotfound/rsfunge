@@ -1,29 +1,36 @@
 use crate::vector::Vector3;
-use crate::io::code_source::CodeSource;
-use crate::interpreter::FungeAddress;
+use crate::io::CodeSource;
+use crate::interpreter::{FungeAddress, FungeSpace, FungeDim2, SpaceAccessorDim2};
+use std::marker::PhantomData;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
-pub struct FungeInterpreter {
+pub struct FungeInterpreter<'s> {
 	code_source: CodeSource,
-	threads: Vec<FungeThread>,
+	threads: Vec<FungeThread<'s>>,
+	
+	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
 }
-impl FungeInterpreter {
+impl<'s> FungeInterpreter<'s> {
 	pub fn start_thread(&mut self, ip: InstructionPointer, delta: InstructionDelta) {
-		let mut thread = FungeThread::new(ip, delta);
+		let thread = FungeThread::new(ip, delta);
 		self.threads.push(thread);
 	}
 }
 
-pub struct FungeThread {
+pub struct FungeThread<'s> {
 	pub ip: InstructionPointer,
 	pub delta: InstructionDelta,
+	_unused: PhantomData<(&'s u8)>,
+	
+//	pub page_key_cache: FungeSpacePage
 }
-impl FungeThread {
+impl<'s> FungeThread<'s> {
 	pub fn new(ip: InstructionPointer, delta: InstructionDelta) -> Self {
 		FungeThread {
 			ip,
 			delta,
+			_unused: PhantomData,
 		}
 	}
 }

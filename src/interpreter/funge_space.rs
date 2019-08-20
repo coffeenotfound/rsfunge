@@ -1,56 +1,52 @@
 use crate::vector::Vector3;
 use std::collections::HashMap;
-use crate::interpreter::{FungeAddress, FungeDimension};
+use crate::interpreter::{FungeAddress, FungeDimension, FungeSpaceAccessor, FungeValue};
 use std::marker::PhantomData;
 
-pub struct FungeSpace<N, V = i32> where N: FungeDimension, V: FungeValue {
-	page_map: HashMap<FungeAddress, FungeSpacePage<N, V>>,
-	size: Vector3<u32>,
-	_phantom: PhantomData<[N]>,
+pub struct FungeSpace<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
+	page_map: HashMap<FungeAddress, FungeSpacePage<'s, N, V, A>>,
+//	size: Vector3<u32>,
+	_unused: PhantomData<(&'s u8, N)>,
 }
-impl<N, V> FungeSpace<N, V> where N: FungeDimension, V: FungeValue {
+impl<'s, N, V, A> FungeSpace<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
 	#[inline(always)]
-	fn get_page(&mut self, page_address: FungeAddress) -> &mut FungeSpacePage<N, V> {
+	fn get_page(&mut self, page_address: FungeAddress) -> &mut FungeSpacePage<'s, N, V, A> {
 		let map = &mut self.page_map;
 		
 		let page = map.entry(page_address).or_insert_with(|| {
-			let page = FungeSpacePage::<N, V>::new();
+			let page = FungeSpacePage::<N, V, A>::new();
 			return page;
 		});
 		return page;
 	}
 }
 
-const FUNGE_PAGE_WIDTH: u32 = 128;
-
-pub struct FungeSpacePage<N, V, A = DefaultSpacePageAccess<N, V>> where N: FungeDimension, V: FungeValue, A: SpacePageAccess<N, V> {
+pub struct FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
 	pub data: Vec<V>,
-	_phantom: PhantomData<[N]>,
+	_unused: PhantomData<(&'s u8, N, A)>,
 }
-impl<N, V, A> FungeSpacePage<N, V, A> where N: FungeDimension, V: FungeValue, A: SpacePageAccess<N, V> {
+impl<'s, N, V, A> FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
 	fn new() -> Self {
-		let zero_value = V::default();
-		let page_cap = Self::get_page_capacity();
-//		let page_cap = PageCellAddressCalc::<N>::get_page_capacity();
-//		let page_cap = 0;
+		let zero_value = A::initial_value();
+		let page_cap = A::get_page_capacity();
 		
 		FungeSpacePage {
 			data: vec![zero_value; (page_cap as usize)],
-			_phantom: PhantomData,
+			_unused: PhantomData,
 		}
 	}
 }
 
-pub trait SpacePageAccess<N, V> where N: FungeDimension, V: FungeValue {
-	fn get_page_capacity() -> u32;
-}
-
-struct DefaultSpacePageAccess<N, V> where N: FungeDimension, V: FungeValue;
-impl<N, V> SpacePageAccess<N, V> for DefaultSpacePageAccess<typenum::U3, V> {
-	fn get_page_capacity() -> u32 {
-		3
-	}
-}
+//pub trait SpacePageAccess<N, V> where N: FungeDimension, V: FungeValue {
+//	fn get_page_capacity() -> u32;
+//}
+//
+//struct DefaultSpacePageAccess<N, V> where N: FungeDimension, V: FungeValue;
+//impl<N, V> SpacePageAccess<N, V> for DefaultSpacePageAccess<typenum::U3, V> {
+//	fn get_page_capacity() -> u32 {
+//		3
+//	}
+//}
 
 //pub trait PageCellAddressCalc<N: FungeDimension> {
 //	fn calc_linear_address(address: FungeAddress) -> u32;
@@ -114,9 +110,7 @@ impl<N, V> SpacePageAccess<N, V> for DefaultSpacePageAccess<typenum::U3, V> {
 //
 //}
 
-/// A value that can be stored in a funge cell.
-pub trait FungeValue: Copy + Clone + Default {}
-impl<T> FungeValue for T where T: Copy + Clone + Default {}
+
 
 //fn _static_assert() {
 //	unsafe {
