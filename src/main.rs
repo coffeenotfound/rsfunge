@@ -11,6 +11,7 @@ pub mod funge_dialect;
 pub mod interpreter;
 pub mod io;
 pub mod vector;
+pub mod buffer;
 
 pub mod final_ref;
 

@@ -1,4 +1,3 @@
-use crate::vector::Vector3;
 use std::collections::HashMap;
 use crate::interpreter::{FungeAddress, FungeDimension, FungeSpaceAccessor, FungeValue};
 use std::marker::PhantomData;
@@ -27,11 +26,13 @@ pub struct FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A
 }
 impl<'s, N, V, A> FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
 	fn new() -> Self {
-		let zero_value = A::initial_value();
+		let initial_value = unsafe {
+			std::mem::transmute::<i32, V>(32) // Space character (32)
+		};
 		let page_cap = A::get_page_capacity();
 		
 		FungeSpacePage {
-			data: vec![zero_value; (page_cap as usize)],
+			data: vec![initial_value; (page_cap as usize)],
 			_unused: PhantomData,
 		}
 	}

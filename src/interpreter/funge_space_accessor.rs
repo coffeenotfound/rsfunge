@@ -6,7 +6,7 @@ pub trait FungeSpaceAccessor<N, V> where N: FungeDimension, V: FungeValue {
 	
 	fn get_page_capacity() -> u32;
 	
-	fn initial_value() -> V;
+//	fn initial_value() -> V;
 }
 
 // Two dimensional
@@ -26,10 +26,10 @@ impl<V> FungeSpaceAccessor<FungeDim2, V> for SpaceAccessorDim2<V> where V: Funge
 		DEFAULT_PAGE_WIDTH_DIM2*DEFAULT_PAGE_WIDTH_DIM2
 	}
 	
-	#[inline(always)]
-	fn initial_value() -> V {
-		V::default()
-	}
+//	#[inline(always)]
+//	fn initial_value() -> V {
+//		V::default()
+//	}
 }
 
 // Three dimensional
@@ -51,8 +51,8 @@ impl<V> FungeSpaceAccessor<FungeDim3, V> for SpaceAccessorDim3<V> where V: Funge
 		DEFAULT_PAGE_WIDTH_DIM3*DEFAULT_PAGE_WIDTH_DIM3*DEFAULT_PAGE_WIDTH_DIM3
 	}
 	
-	#[inline(always)]
-	fn initial_value() -> V {
-		V::default()
-	}
+//	#[inline(always)]
+//	fn initial_value() -> V {
+//		V::default()
+//	}
 }
