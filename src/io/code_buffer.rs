@@ -29,8 +29,8 @@ impl CodeBufferLine {
 	}
 }
 
+#[derive(Copy, Clone)]
 pub enum LineTerminator {
-	NextX,
 	NextY,
 	NextZ,
 	End,
