@@ -1,4 +1,4 @@
-use crate::interpreter::{FungeDimension, FungeValue, FungeDim2, FungeDim3};
+use crate::interpreter::{FungeDimension, FungeValue, FungeDim2, FungeDim3, FungeAddress, FungePageAddress};
 use std::marker::PhantomData;
 
 pub trait FungeSpaceAccessor<N, V> where N: FungeDimension, V: FungeValue {
@@ -6,7 +6,11 @@ pub trait FungeSpaceAccessor<N, V> where N: FungeDimension, V: FungeValue {
 	
 	fn get_page_capacity() -> u32;
 	
-//	fn initial_value() -> V;
+	fn localize_address(address: &FungeAddress) -> FungeAddress;
+	
+	fn address_to_page_linear_index(local_address: &FungeAddress) -> usize;
+	
+	fn make_page_address(address: &FungeAddress) -> FungePageAddress;
 }
 
 // Two dimensional
@@ -26,10 +30,30 @@ impl<V> FungeSpaceAccessor<FungeDim2, V> for SpaceAccessorDim2<V> where V: Funge
 		DEFAULT_PAGE_WIDTH_DIM2*DEFAULT_PAGE_WIDTH_DIM2
 	}
 	
-//	#[inline(always)]
-//	fn initial_value() -> V {
-//		V::default()
-//	}
+	fn localize_address(address: &FungeAddress) -> FungeAddress {
+		let page_width = Self::get_page_width() as i32;
+		
+		let mut local = FungeAddress::new();
+		local.set_x(address.x().rem_euclid(page_width));
+		local.set_y(address.y().rem_euclid(page_width));
+		return local;
+	}
+	
+	fn address_to_page_linear_index(local_address: &FungeAddress) -> usize {
+		let page_width = Self::get_page_width() as usize;
+		
+		return (local_address.x() as usize)
+			+ (local_address.y() as usize * page_width);
+	}
+	
+	fn make_page_address(address: &FungeAddress) -> FungePageAddress {
+		let page_width = Self::get_page_width() as i32;
+		
+		let mut page_address = FungeAddress::new();
+		page_address.set_x(address.x().div_euclid(page_width));
+		page_address.set_y(address.y().div_euclid(page_width));
+		return page_address;
+	}
 }
 
 // Three dimensional
@@ -51,8 +75,30 @@ impl<V> FungeSpaceAccessor<FungeDim3, V> for SpaceAccessorDim3<V> where V: Funge
 		DEFAULT_PAGE_WIDTH_DIM3*DEFAULT_PAGE_WIDTH_DIM3*DEFAULT_PAGE_WIDTH_DIM3
 	}
 	
-//	#[inline(always)]
-//	fn initial_value() -> V {
-//		V::default()
-//	}
+	fn localize_address(address: &FungeAddress) -> FungeAddress {
+		let page_width = Self::get_page_width() as i32;
+		
+		let mut local = FungeAddress::new();
+		local.set_x(address.x().rem_euclid(page_width));
+		local.set_y(address.y().rem_euclid(page_width));
+		local.set_y(address.z().rem_euclid(page_width));
+		return local;
+	}
+	
+	fn address_to_page_linear_index(local_address: &FungeAddress) -> usize {
+		let page_width = Self::get_page_width() as usize;
+		return (local_address.x() as usize)
+			+ (local_address.y() as usize * page_width)
+			+ (local_address.z() as usize * page_width * page_width);
+	}
+	
+	fn make_page_address(address: &FungeAddress) -> FungePageAddress {
+		let page_width = Self::get_page_width() as i32;
+		
+		let mut page_address = FungeAddress::new();
+		page_address.set_x(address.x().div_euclid(page_width));
+		page_address.set_y(address.y().div_euclid(page_width));
+		page_address.set_z(address.z().div_euclid(page_width));
+		return page_address;
+	}
 }

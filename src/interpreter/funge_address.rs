@@ -11,3 +11,5 @@ impl hash::Hash for FungeAddress {
 		state.write_i32(self.elements[2]);
 	}
 }
+
+pub type FungePageAddress = Vector3<i32>;
