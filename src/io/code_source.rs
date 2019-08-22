@@ -1,6 +1,7 @@
 use std::path::{PathBuf, Path};
 use crate::FungeDialect;
 
+#[derive(Clone)]
 pub struct CodeSource {
 	path: PathBuf,
 	dialect: FungeDialect,
