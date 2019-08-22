@@ -7,6 +7,13 @@ pub struct CodeSource {
 	dialect: FungeDialect,
 }
 impl CodeSource {
+	pub fn new(path: PathBuf, dialect: FungeDialect) -> Self {
+		CodeSource {
+			path,
+			dialect,
+		}
+	}
+	
 	pub fn get_path(&self) -> &Path {
 		self.path.as_path()
 	}
