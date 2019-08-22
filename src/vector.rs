@@ -14,6 +14,12 @@ impl<T: Copy + Default> Vector3<T> {
 		}
 	}
 	
+	pub fn new_value(value: T) -> Self {
+		Vector3 {
+			elements: [value; 3],
+		}
+	}
+	
 	#[inline(always)]
 	pub fn x(&self) -> T {
 		self.elements[0]
