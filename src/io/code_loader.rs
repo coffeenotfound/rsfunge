@@ -6,7 +6,6 @@ use std::io::Read;
 use std::iter::Peekable;
 use std::str::Chars;
 use std::cmp;
-use crate::funge_dialect::FungeDialect;
 use crate::io::{CodeBuffer, CodeSource, CodeBufferLine, LineTerminator};
 use crate::vector::Vector3;
 
