@@ -1,10 +1,19 @@
 
+//pub trait VectorValue = Copy + Default;
+
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Vector3<T: Copy> {
+pub struct Vector3<T: Copy + Default> {
 	pub elements: [T; 3],
 }
 
-impl<T: Copy> Vector3<T> {
+impl<T: Copy + Default> Vector3<T> {
+	pub fn new() -> Self {
+		let zero = T::default();
+		Vector3 {
+			elements: [zero; 3],
+		}
+	}
+	
 	#[inline(always)]
 	pub fn x(&self) -> T {
 		self.elements[0]
