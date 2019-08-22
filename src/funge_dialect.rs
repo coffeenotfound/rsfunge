@@ -1,5 +1,6 @@
 //use std::collections::HashMap;
 
+#[derive(Copy, Clone)]
 pub enum FungeDialect {
 	Befunge93,
 	Befunge98,
