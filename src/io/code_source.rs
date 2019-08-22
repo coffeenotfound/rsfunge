@@ -1,5 +1,5 @@
 use std::path::{PathBuf, Path};
-use crate::funge_dialect::FungeDialect;
+use crate::FungeDialect;
 
 pub struct CodeSource {
 	path: PathBuf,
