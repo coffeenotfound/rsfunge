@@ -26,9 +26,7 @@ pub struct FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A
 }
 impl<'s, N, V, A> FungeSpacePage<'s, N, V, A> where N: FungeDimension, V: FungeValue, A: FungeSpaceAccessor<N, V> {
 	fn new() -> Self {
-		let initial_value = unsafe {
-			std::mem::transmute::<i32, V>(32) // Space character (32)
-		};
+		let initial_value = V::from(32i32); // Space character (32)
 		let page_cap = A::get_page_capacity();
 		
 		FungeSpacePage {
