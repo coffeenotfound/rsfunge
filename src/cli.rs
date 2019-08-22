@@ -1,9 +1,11 @@
 use clap::{self, Arg};
 use std::env;
 use std::error;
-use crate::utils;
+use crate::{utils, FungeDialect};
 use crate::interpreter::FungeInterpreter;
 use std::fmt::{self, Display};
+use crate::io::{CodeLoader, CodeSource};
+use std::path::PathBuf;
 
 //pub type ArgumentError = GenericError<S>;#
 #[derive(Debug)]
@@ -50,9 +52,24 @@ pub fn start() {
 		return Ok(());
 	})();
 	
-	// Load code
+	// Get params
+	let code_source = CodeSource::new(PathBuf::new(), FungeDialect::Befunge93);
 	
+	// Load code
+	let mut loader = CodeLoader::new();
+	let code_buffer = loader.load_from_file(code_source.clone());
+	
+	if let Err(e) = code_buffer {
+		// TODO: Handle code read error properly
+		panic!("Failed to load code: {}", e);
+	}
 	
 	// Create interpreter
-	let interpreter: FungeInterpreter; // = FungeInterpreter::new();
+	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source);
+	
+	// Load inital code into interpreter
+	interpreter.load_initial_code(&code_buffer.unwrap());
+	
+	// Transfer control to interpreter and start execution
+	interpreter.start_execution();
 }
