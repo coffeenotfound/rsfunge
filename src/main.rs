@@ -1,7 +1,6 @@
 #![allow(unused_parens)]
 #![feature(specialization)]
 #![feature(trait_alias)]
-#![feature(euclidean_division)]
 
 #[macro_use]
 extern crate lazy_static;
