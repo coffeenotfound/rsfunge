@@ -1,7 +1,6 @@
 use crate::vector::Vector3;
 use crate::io::{CodeSource, CodeBuffer};
 use crate::interpreter::{FungeAddress, FungeSpace, FungeDim2, SpaceAccessorDim2, ThreadList};
-use std::marker::PhantomData;
 use std::num::Wrapping;
 
 /// Interpreter for funge*.
