@@ -9,7 +9,7 @@ pub type Codepoint = u32;
 /// CodeBuffer contains a loaded funge program (one source file)
 pub struct CodeBuffer {
 	pub lines: Vec<CodeBufferLine>,
-	pub bounding_size: Vector3<u32>,
+	pub bounding_box: Vector3<u32>,
 	pub dimensions: u32,
 }
 impl CodeBuffer {
