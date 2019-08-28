@@ -1,4 +1,5 @@
 use crate::vector::Vector3;
+use std::marker::PhantomData;
 
 ///// An unsigned 8-bit ASCII character.
 //pub type Ascii = u8;
@@ -11,9 +12,18 @@ pub struct CodeBuffer {
 	pub lines: Vec<CodeBufferLine>,
 	pub bounding_box: Vector3<u32>,
 	pub dimensionality: u32,
+	
+	_phantom: PhantomData<()>,
 }
 impl CodeBuffer {
-	
+	pub fn new(lines: Vec<CodeBufferLine>, bounding_box: Vector3<u32>, dimensionality: u32) -> Self {
+		return CodeBuffer {
+			lines,
+			bounding_box,
+			dimensionality,
+			_phantom: PhantomData,
+		};
+	}
 }
 
 pub struct CodeBufferLine {
