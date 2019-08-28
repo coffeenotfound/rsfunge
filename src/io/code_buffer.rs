@@ -10,7 +10,7 @@ pub type Codepoint = u32;
 pub struct CodeBuffer {
 	pub lines: Vec<CodeBufferLine>,
 	pub bounding_box: Vector3<u32>,
-	pub dimensions: u32,
+	pub dimensionality: u32,
 }
 impl CodeBuffer {
 	
