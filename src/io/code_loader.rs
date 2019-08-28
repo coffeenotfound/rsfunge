@@ -9,7 +9,7 @@ use std::cmp;
 use crate::io::{CodeBuffer, CodeSource, CodeBufferLine, LineTerminator};
 use crate::vector::Vector3;
 
-/// Loads code from file into a code buffer with valid data.
+/// Loads funge source code from file into a code buffer.
 pub struct CodeLoader {
 	_phantom: PhantomData<()>,
 }
@@ -21,8 +21,12 @@ impl CodeLoader {
 	}
 	
 	/// Tries to load funge* source code from the given file.
-	/// Returns a code buffer with the code if it could be loaded
-	/// correctly.
+	/// Returns either a code buffer with the code if it could be loaded correctly or
+	/// an Err if an error occured.
+	/// 
+	/// The files contents are assumed to be UTF-8 encoded and the resulting
+	/// code buffer will not contain any line feed, carriage return, carriage return + line feed
+	/// or form feed control codes.
 	pub fn load_from_file(&mut self, source: CodeSource) -> Result<CodeBuffer, impl Error> {
 		// Open file
 		let path: &Path = source.get_path();
@@ -42,7 +46,7 @@ impl CodeLoader {
 		let mut string_contents = String::new();
 		let num_read_bytes = file.read_to_string(&mut string_contents)?;
 		
-		// TODO: Optimize this using a however big read buffer and manual deconding with rust-encoding
+		// TODO: Support different encodings (maybe via the rust-encoding crate)
 		
 		// Allocate line buffer
 		let mut line_buffer = Vec::<CodeBufferLine>::with_capacity(64);
