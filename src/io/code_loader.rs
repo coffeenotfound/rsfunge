@@ -80,7 +80,7 @@ impl CodeLoader {
 				match char {
 					'\u{10}' => { // Line feed
 						// Set terminator
-						current_line.terminator = LineTerminator::NextY;
+						current_line.terminator = LineTerminator::FeedY;
 						break 'sourceloop;
 					}
 					'\u{13}' => { // Carriage return
@@ -93,12 +93,12 @@ impl CodeLoader {
 						}
 						
 						// Set terminator
-						current_line.terminator = LineTerminator::NextY;
+						current_line.terminator = LineTerminator::FeedY;
 						break 'sourceloop;
 					}
 					'\u{12}' => { // Form feed, increment z coord
 						// Set terminator
-						current_line.terminator = LineTerminator::NextZ;
+						current_line.terminator = LineTerminator::FeedZ;
 						break 'sourceloop;
 					}
 					_ => {
@@ -122,10 +122,10 @@ impl CodeLoader {
 			else {
 				// Increase bounding box (only if there's actually another line)
 				match current_terminator {
-					LineTerminator::NextY => {
+					LineTerminator::FeedY => {
 						bounding_box.set_y(bounding_box.y() + 1);
 					},
-					LineTerminator::NextZ => {
+					LineTerminator::FeedZ => {
 						bounding_box.set_z(bounding_box.z() + 1);
 					},
 					_ => {},

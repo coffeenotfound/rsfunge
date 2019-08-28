@@ -31,8 +31,8 @@ impl CodeBufferLine {
 
 #[derive(Copy, Clone)]
 pub enum LineTerminator {
-	NextY,
-	NextZ,
+	FeedY,
+	FeedZ,
 	End,
 }
 
