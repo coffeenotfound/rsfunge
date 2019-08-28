@@ -1,7 +1,7 @@
 
-mod funge_space;
 mod funge_interpreter;
 mod funge_thread;
+mod funge_space;
 mod funge_address;
 mod funge_dimension;
 mod funge_space_accessor;
