@@ -71,27 +71,6 @@ impl<'s> FungeInterpreter<'s> {
 	}
 }
 
-pub struct FungeThread<'s> {
-	pub ip: InstructionPointer,
-	pub delta: InstructionDelta,
-	
-	pub string_mode: bool,
-	
-	_phantom: PhantomData<(&'s u8)>,
-	
-//	pub page_key_cache: FungeSpacePage
-}
-impl<'s> FungeThread<'s> {
-	pub fn new(ip: InstructionPointer, delta: InstructionDelta) -> Self {
-		FungeThread {
-			ip,
-			delta,
-			string_mode: false,
-			_phantom: PhantomData,
-		}
-	}
-}
-
 pub type InstructionPointer = FungeAddress;
 impl InstructionPointer {
 	pub fn add_delta_wrapping(&mut self, delta: &InstructionDelta) {
