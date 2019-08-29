@@ -10,6 +10,8 @@ mod funge_space_accessor;
 mod funge_value;
 mod thread_list;
 
+pub mod instruction;
+
 pub use funge_interpreter::*;
 pub use funge_thread::*;
 pub use funge_space::*;
