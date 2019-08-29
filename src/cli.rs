@@ -31,6 +31,7 @@ pub fn start() {
 			.takes_value(true))
 		.arg(Arg::with_name("source-file")
 			.index(1)
+			.empty_values(false)
 			.required(true));
 	
 	// Evalutate cli invocation
@@ -52,16 +53,20 @@ pub fn start() {
 		return Ok(());
 	})();
 	
+	// Check for cli (validation) errors
+	if let Err(err) = evaluation_res {
+		panic!("Cli error"); // TODO: Handle properly
+	}
+	
 	// Get params
-	let code_source = CodeSource::new(PathBuf::new(), FungeDialect::Befunge93);
+	let code_source = CodeSource::new(PathBuf::new(), FungeDialect::Befunge98);
 	
 	// Load code
 	let mut loader = CodeLoader::new();
 	let code_buffer = loader.load_from_file(code_source.clone());
 	
 	if let Err(e) = code_buffer {
-		// TODO: Handle code read error properly
-		panic!("Failed to load code: {}", e);
+		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
 	}
 	
 	// Create interpreter
