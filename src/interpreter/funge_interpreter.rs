@@ -11,6 +11,7 @@ pub struct FungeInterpreter<'s> {
 	
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
 }
+
 impl<'s> FungeInterpreter<'s> {
 	pub fn new(code_source: CodeSource) -> Self {
 		// Instantiate

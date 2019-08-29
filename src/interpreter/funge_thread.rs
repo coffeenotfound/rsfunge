@@ -11,6 +11,7 @@ pub struct FungeThread<'s> {
 	
 //	pub page_key_cache: FungeSpacePage
 }
+
 impl<'s> FungeThread<'s> {
 	pub fn new(ip: InstructionPointer, delta: InstructionDelta) -> Self {
 		FungeThread {
