@@ -43,8 +43,11 @@ impl<V: FungeValue> FungeStackStack<V> {
 	}
 	
 	pub fn new() -> Self {
+		let mut data = Vec::with_capacity(8);
+		data.push(FungeStack::new());
+		
 		return FungeStackStack {
-			data: Vec::new(),
+			data,
 		};
 	}
 }
