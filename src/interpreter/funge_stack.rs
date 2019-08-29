@@ -24,4 +24,10 @@ impl<V: FungeValue> FungeStack<V> {
 	pub fn try_pop(&mut self) -> Option<V> {
 		return self.data.pop();
 	}
+	
+	pub fn new() -> Self {
+		return FungeStack {
+			data: Vec::new(),
+		}
+	}
 }
