@@ -93,7 +93,7 @@ impl<'s> FungeThread<'s> {
 
 pub type InstructionPointer = FungeAddress;
 impl InstructionPointer {
-	pub fn add_delta_wrapping(&mut self, delta: InstructionDelta) {
+	pub fn add_delta_wrapping(&mut self, delta: &InstructionDelta) {
 		self.elements[0] = (Wrapping(self.x()) + Wrapping(delta.x())).0;
 		self.elements[1] = (Wrapping(self.y()) + Wrapping(delta.y())).0;
 		self.elements[2] = (Wrapping(self.z()) + Wrapping(delta.z())).0;
