@@ -133,12 +133,9 @@ impl CodeLoader {
 			}
 		}
 		
+		// TODO: Actually handle dimensionality properly
 		// Make code buffer instance
-		let code_buffer = CodeBuffer {
-			lines: line_buffer,
-			dimensions: 0, // TODO: Actually handle this properly
-			bounding_size: bounding_box,
-		};
+		let code_buffer = CodeBuffer::new(line_buffer, bounding_box, 0);
 		return Ok(code_buffer);
 	}
 }
