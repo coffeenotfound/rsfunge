@@ -1,7 +1,8 @@
-use crate::vector::Vector3;
-use crate::io::{CodeSource, CodeBuffer};
-use crate::interpreter::{FungeAddress, FungeSpace, FungeDim2, SpaceAccessorDim2, ThreadList};
 use std::num::Wrapping;
+use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList};
+use crate::io::{CodeBuffer, CodeSource};
+use crate::vector::Vector3;
+use crate::interpreter::instruction::insts;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
@@ -55,12 +56,50 @@ impl<'s> FungeInterpreter<'s> {
 		let ip = thread.ip;
 		
 		// Read instruction cell
+		let mut move_ip = true;
+		let mut valid_instruction = false;
 		let instruction = self.funge_space.read_cell(&ip);
 		
-		// Match instruction
+		// Execute instruction
+		if (32 < instruction) && (instruction <= 126) {
+			valid_instruction = true;
+			
+			match instruction {
+				/* 0...9 */ n @ 48..=57 => insts::inst_push_number(thread, n - 48),
+				/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
+				/* ! */ 33 => insts::inst_logical_not(thread),
+				/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
+				/* . */ 46 => insts::inst_output_integer(self, thread),
+				/* ` */ 96 => insts::inst_greater_than(thread),
+				/* z */ 122 => {/* No-op */}
+				
+				/* @ */ 64 => panic!("[[Stop instruction]]"),
+				_ => {
+					// Invalid (or implmented) instruction so set flag
+					valid_instruction = false
+				},
+			}
+		}
+		// "Execute" space instruction
+		else if instruction == 32 {
+			// Set flag because we already set the ip to the next non-space instruction
+			move_ip = false;
+			
+			// Search for next non-space instruction
+			let mut pos = thread.ip; // Copy ip
+			while {
+				pos.add_delta_wrapping(&thread.delta);
+				(self.funge_space.read_cell(&pos) == 32)
+			} {}
+			
+			// Set thread ip to next non-space instruction
+			thread.ip = pos;
+		}
 		
-		// Move ip
-//		thread.ip
+		// Move ip by delta
+		if move_ip {
+			thread.ip.add_delta_wrapping(&thread.delta);
+		}
 	}
 	
 	pub fn load_initial_code(&mut self, code: &CodeBuffer) {
