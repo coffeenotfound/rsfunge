@@ -50,9 +50,9 @@ pub fn start() {
 	}
 	
 	// Create interpreter
-	let charout = stdout();
-	let charin = stdin();
-	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, &charout, &charin);
+	let mut charout = stdout();
+	let mut charin = stdin();
+	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, &mut charout, &mut charin);
 	
 	// Load inital code into interpreter
 	interpreter.load_initial_code(&code_buffer.unwrap());
