@@ -42,7 +42,7 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 		loop {
 			// Execute next tick with each thread
 			let mut i = 0;
-			loop {
+			while i < self.threads.num() {
 //				let thread = self.threads.get_mut(i).unwrap();
 				
 				// Run thread tick
