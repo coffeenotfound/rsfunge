@@ -18,6 +18,10 @@ impl<'s> ThreadList<'s> {
 	pub fn get(&self, index: u32) -> Option<&FungeThread<'s>> {
 		return self.threads.get(index as usize);
 	}
+	
+	pub fn num(&self) -> u32 {
+		return self.threads.len() as u32;
+	}
 }
 
 //impl<'s> std::ops::Index<usize> for ThreadList<'s> {
