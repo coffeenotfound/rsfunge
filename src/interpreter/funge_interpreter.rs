@@ -37,10 +37,10 @@ impl<'s> FungeInterpreter<'s> {
 			// Execute next tick with each thread
 			let mut i = 0;
 			loop {
-				let mut thread = self.threads.get_mut(i).unwrap();
+//				let thread = self.threads.get_mut(i).unwrap();
 				
 				// Run thread tick
-				self.execute_thread_tick(thread);
+				self.execute_thread_tick(i);
 				
 				// Increment index
 				i += 1;
@@ -49,7 +49,9 @@ impl<'s> FungeInterpreter<'s> {
 	}
 	
 	#[inline]
-	fn execute_thread_tick(&mut self, thread: &mut FungeThread) {
+	fn execute_thread_tick(&mut self, thread_index: u32) {
+		let mut thread = self.threads.get_mut(thread_index).unwrap();
+		
 		let ip = thread.ip;
 		
 		// Read instruction cell
