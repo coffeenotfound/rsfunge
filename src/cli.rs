@@ -1,25 +1,67 @@
-use clap::{self, Arg};
 use std::env;
 use std::error;
+use std::fmt::{self, Display};
+use std::path::PathBuf;
+use clap::{self, Arg};
 use crate::{utils, FungeDialect};
 use crate::interpreter::FungeInterpreter;
-use std::fmt::{self, Display};
 use crate::io::{CodeLoader, CodeSource};
-use std::path::PathBuf;
+use std::io::{stdin, stdout};
 
 //pub type ArgumentError = GenericError<S>;#
 #[derive(Debug)]
-pub struct ArgError;
+pub struct ArgError {
+	message: String,
+}
+impl ArgError {
+	pub fn new(message: String) -> Self {
+		ArgError {
+			message,
+		}
+	}
+}
 impl error::Error for ArgError {
 	
 }
 impl Display for ArgError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-		write!(f, "Arg error")
+		write!(f, "{}", self.message)
 	}
 }
 
 pub fn start() {
+	// Handle cli
+	let run_options: RunOptions;
+	if let Ok(options) = parse_cli() {
+		run_options = options;
+	}
+	else {
+		return;
+	}
+	
+	// Load inital code
+	let code_source = CodeSource::new(run_options.source_file, FungeDialect::Befunge98); // TODO: Use proper dialect
+	
+	let mut loader = CodeLoader::new();
+	let code_buffer = loader.load_from_file(code_source.clone());
+	
+	if let Err(e) = code_buffer {
+		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
+	}
+	
+	// Create interpreter
+	let charout = stdout();
+	let charin = stdin();
+	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, &charout, &charin);
+	
+	// Load inital code into interpreter
+	interpreter.load_initial_code(&code_buffer.unwrap());
+	
+	// Transfer control to interpreter and start execution
+	interpreter.start_execution();
+}
+
+fn parse_cli() -> Result<RunOptions, impl error::Error> {
 	// Construct cli
 	let dialect_list = utils::format_humaized_list(vec!["TEST", "WORLD"].as_slice());
 	let dialect_help: String = format!("Which dialect of Funge to use ({})", dialect_list);
@@ -35,7 +77,7 @@ pub fn start() {
 			.required(true));
 	
 	// Evalutate cli invocation
-	let evaluation_res = (|| -> Result<(), ArgError> {
+	let eval_result = (|| -> Result<RunOptions, ArgError> {
 		let cli_result = cli.get_matches_from_safe(env::args_os());
 		
 		let matches;
@@ -43,38 +85,49 @@ pub fn start() {
 			matches = m;
 		}
 		else {
-			return Err(ArgError);
+			return Err(ArgError::new(String::from("Failed to parse")));
 		}
 		
 		// TODO: Parse dialect
+		// TODO: Parse rest of options
 		
-		let source_file = matches.value_of("source-file");
+		// Get source file path
+		let source_file = {
+			let file = matches.value_of("source-file");
+			
+			if file.is_none() {
+				return Err(ArgError::new(String::from("Source file must be specified")));
+			}
+			PathBuf::from(file.unwrap())
+		};
 		
-		return Ok(());
+		// Make options object
+		let options = RunOptions {
+			source_file,
+		};
+		return Ok(options);
 	})();
 	
-	// Check for cli (validation) errors
-	if let Err(err) = evaluation_res {
-		panic!("Cli error"); // TODO: Handle properly
+	match eval_result {
+		// Handle validation error
+		Err(err) => {
+			// Print cli help
+			eprint!("{}", err.message);
+			
+			return Err(err); // TODO: Handle properly, i.e. wrap in own error with message
+		}
+		// Return valid RunOptions object
+		Ok(options) => {
+			return Ok(options);
+		}
 	}
-	
-	// Get params
-	let code_source = CodeSource::new(PathBuf::new(), FungeDialect::Befunge98);
-	
-	// Load code
-	let mut loader = CodeLoader::new();
-	let code_buffer = loader.load_from_file(code_source.clone());
-	
-	if let Err(e) = code_buffer {
-		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
-	}
-	
-	// Create interpreter
-	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source);
-	
-	// Load inital code into interpreter
-	interpreter.load_initial_code(&code_buffer.unwrap());
-	
-	// Transfer control to interpreter and start execution
-	interpreter.start_execution();
+}
+
+pub struct RunOptions {
+	source_file: PathBuf,
+}
+
+pub enum DialectOption {
+	Specific(FungeDialect),
+	Unknown,
 }
