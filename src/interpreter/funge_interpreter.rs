@@ -3,23 +3,28 @@ use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2,
 use crate::io::{CodeBuffer, CodeSource};
 use crate::vector::Vector3;
 use crate::interpreter::instruction::insts;
+use std::io::{Write, Read};
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
-pub struct FungeInterpreter<'s> {
+pub struct FungeInterpreter<'s, 'io> {
 	code_source: CodeSource,
 	threads: ThreadList<'s>,
-	
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
+	
+	charout: &'io mut dyn Write,
+	charin: &'io mut dyn Read,
 }
 
-impl<'s> FungeInterpreter<'s> {
-	pub fn new(code_source: CodeSource) -> Self {
+impl<'s, 'io> FungeInterpreter<'s, 'io> {
+	pub fn new(code_source: CodeSource, charout: &'io mut dyn Write, charin: &'io mut dyn Read) -> Self {
 		// Instantiate
 		let mut interpreter = FungeInterpreter {
 			code_source,
 			threads: ThreadList::new(),
 			funge_space: FungeSpace::new(),
+			charout,
+			charin,
 		};
 		
 		// Create initial thread
