@@ -38,7 +38,7 @@ impl<'s, N, V, A> FungeSpace<'s, N, V, A> where N: FungeDimension, V: FungeValue
 	pub fn write_cell(&mut self, address: &FungeAddress, value: V) {
 		// Get page (create if necessary)
 		let page_address = A::make_page_address(address);
-		let mut page = self.get_page_or_create(&page_address);
+		let page = self.get_page_or_create(&page_address);
 		
 		// Localize address
 		let local_address = A::localize_address(address); // TODO: This might be sped up because we already have the page address, because we already have the page address
