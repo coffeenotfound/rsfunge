@@ -74,7 +74,8 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 				/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
 				/* ! */ 33 => insts::inst_logical_not(thread),
 				/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
-				/* . */ 46 => insts::inst_output_integer(self, thread),
+				/* , */ 44 => insts::inst_output_char(thread, self.charout),
+				/* . */ 46 => insts::inst_output_integer(thread, self.charout),
 				/* ` */ 96 => insts::inst_greater_than(thread),
 				/* z */ 122 => {/* No-op */}
 				
