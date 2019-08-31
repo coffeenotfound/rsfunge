@@ -1,4 +1,4 @@
-use crate::interpreter::{FungeThread, FungeInterpreter};
+use crate::interpreter::{FungeThread};
 use std::io::Write;
 
 /// 33: Logical not (!)
