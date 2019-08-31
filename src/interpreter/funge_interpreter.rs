@@ -109,7 +109,7 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 	}
 	
 	pub fn load_initial_code(&mut self, code: &CodeBuffer) {
-		// 
+		self.load_code(code, FungeAddress::new_xyz(0, 0, 0));
 	}
 	
 	/// Loads the code from the given buffer into this interpreters
