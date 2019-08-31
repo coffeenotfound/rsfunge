@@ -13,16 +13,6 @@ pub fn inst_logical_not(thread: &mut FungeThread) {
 pub fn inst_output_char(thread: &mut FungeThread, charout: &mut dyn Write) {
 	let cell = thread.stack_stack.pop();
 	
-	if let Err(e) = write!(charout, "{}", cell) {
-		// Do nothing on error
-	}
-}
-
-/// 46: Output integer (.)
-#[inline(always)]
-pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut dyn Write) {
-	let cell = thread.stack_stack.pop();
-	
 	// Print the cell by converting it to a unicode scalar ("char") if possible
 	let mut char = '?';
 	if cell > 0 {
@@ -32,6 +22,16 @@ pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut dyn Write) {
 	}
 	
 	if let Err(e) = write!(charout, "{}", char) {
+		// Do nothing on error
+	}
+}
+
+/// 46: Output integer (.)
+#[inline(always)]
+pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut dyn Write) {
+	let cell = thread.stack_stack.pop();
+	
+	if let Err(e) = write!(charout, "{}", cell) {
 		// Do nothing on error
 	}
 }
