@@ -1,9 +1,9 @@
-use std::num::Wrapping;
 use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList};
-use crate::io::{CodeBuffer, CodeSource};
+use crate::io::{CodeBuffer, CodeSource, LineTerminator};
 use crate::vector::Vector3;
 use crate::interpreter::instruction::insts;
 use std::io::{Write, Read};
+use std::num::Wrapping;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
@@ -110,6 +110,50 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 	
 	pub fn load_initial_code(&mut self, code: &CodeBuffer) {
 		// 
+	}
+	
+	/// Loads the code from the given buffer into this interpreters
+	/// funge space where the given position is the top left corner
+	/// of the code's bounding box.
+	/// 
+	/// The cell values in the buffer are copied verbatim into the funge space,
+	/// overwriting the previous values. Space characters (ASCII 32)
+	/// in the code buffer are treated as essentially transparent.
+	/// They do not overwrite cells in the funge space and are simply
+	/// ignored, leaving the previous value intact.
+	///
+	/// This method traverses and processes the code buffer lines until either
+	/// none are left or a line has an End terminator. Note that and End terminator
+	/// should never occur until the very last code buffer line, although
+	/// the existance of an End terminator is optional. In case an End
+	/// terminator does occur before the last line, the loading procedure
+	/// is simply stopped instead of panicing.
+	/// 
+	pub fn load_code(&mut self, code: &CodeBuffer, position: FungeAddress) {
+		let mut offset = FungeAddress::new_value(0);
+		
+		// TODO: Handle dimensionality properly
+		
+		'line_loop:
+		for line in code.lines.iter() {
+			// Put line values into funge space
+			for (x, value) in line.data.iter().enumerate() {
+				let cell_value = *value as i32; // Reinterpret u32 codepoint as i32 cell value
+				
+				let mut address = FungeAddress::new_xyz(x as i32, 0, 0);
+				address.add_wrapping(&offset);
+				
+				// Write cell
+				self.funge_space.write_cell(&address, cell_value);
+			}
+			
+			// Process terminator
+			match line.terminator {
+				LineTerminator::FeedY => offset.set_y(offset.y().wrapping_add(1i32)),
+				LineTerminator::FeedZ => offset.set_z(offset.z().wrapping_add(1i32)),
+				LineTerminator::End => break 'line_loop, // Stop iteration on End terminator
+			};
+		}
 	}
 	
 	pub fn create_thread(&mut self, ip: InstructionPointer, delta: InstructionDelta) {
