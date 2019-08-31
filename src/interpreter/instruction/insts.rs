@@ -31,7 +31,7 @@ pub fn inst_output_char(thread: &mut FungeThread, charout: &mut dyn Write) {
 pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut dyn Write) {
 	let cell = thread.stack_stack.pop();
 	
-	if let Err(e) = write!(charout, "{}", cell) {
+	if let Err(e) = write!(charout, "{} ", cell as i32) { // As per spec write a space after the decimal number
 		// Do nothing on error
 	}
 }
