@@ -80,12 +80,46 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 	fn execute_thread_tick(&mut self, thread_index: u32) {
 		let mut thread = self.threads.get_mut(thread_index).unwrap();
 		
-		let ip = thread.ip;
-		
-		// Read instruction cell
-		let mut move_ip = true;
+//		let mut move_ip = true;
 		let mut valid_instruction = false;
-		let instruction = self.funge_space.read_cell(&ip);
+		
+		// Pseudo-execute space and semicolon instruction
+		// Both take zero ticks. Do as long as there is still some left
+		let mut instruction;
+		while {
+			// Read instruction cell
+			instruction = self.funge_space.read_cell(&thread.ip);
+			
+			match instruction {
+				/*   */ 32 => {{
+					// Search for next non-space instruction
+					let mut pos = thread.ip; // Copy ip
+					while {
+						pos.add_delta_wrapping(&thread.delta);
+						(self.funge_space.read_cell(&pos) == 32)
+					} {}
+					
+					// Set thread ip to next non-space instruction
+					thread.ip = pos;
+				}; true},
+				
+				/* ; */ 59 => {{
+					// Search for next non-space instruction
+					let mut pos = thread.ip; // Copy ip
+					while {
+						pos.add_delta_wrapping(&thread.delta);
+						(self.funge_space.read_cell(&pos) != 59)
+					} {}
+					
+					// Move ip to next actual instruction
+					pos.add_delta_wrapping(&thread.delta);
+					
+					// Set thread ip to next non-space instruction
+					thread.ip = pos;
+				}; true},
+				_ => false,
+			}
+		} {}
 		
 		// Execute instruction
 		if (32 < instruction) && (instruction <= 126) {
@@ -137,26 +171,9 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 				},
 			}
 		}
-		// "Execute" space instruction
-		else if instruction == 32 {
-			// Set flag because we already set the ip to the next non-space instruction
-			move_ip = false;
-			
-			// Search for next non-space instruction
-			let mut pos = thread.ip; // Copy ip
-			while {
-				pos.add_delta_wrapping(&thread.delta);
-				(self.funge_space.read_cell(&pos) == 32)
-			} {}
-			
-			// Set thread ip to next non-space instruction
-			thread.ip = pos;
-		}
 		
 		// Move ip by delta
-		if move_ip {
-			thread.ip.add_delta_wrapping(&thread.delta);
-		}
+		thread.ip.add_delta_wrapping(&thread.delta);
 	}
 	
 	pub fn load_initial_code(&mut self, code: &CodeBuffer) {
