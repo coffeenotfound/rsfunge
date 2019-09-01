@@ -8,6 +8,56 @@ pub fn inst_logical_not(thread: &mut FungeThread) {
 	thread.stack_stack.push(if cell == 0 { 1 } else { 0 });
 }
 
+/// 37: Remainder (%)
+#[inline(always)]
+pub fn inst_remainder(thread: &mut FungeThread) {
+	let (a, b) = thread.stack_stack.pop_two();
+	
+	// Calculate the remainder of the division of the values with explicit overflow wrapping
+	let c = b.wrapping_rem(a); // As per spec: Remainder from dividing second by first
+	thread.stack_stack.push(c);
+}
+
+/// 42: Multiply (*)
+#[inline(always)]
+pub fn inst_multiply(thread: &mut FungeThread) {
+	let (a, b) = thread.stack_stack.pop_two();
+	
+	// Mutliply the values with explicit overflow wrapping
+	let c = a.wrapping_mul(b);
+	thread.stack_stack.push(c);
+}
+
+/// 43: Add (+)
+#[inline(always)]
+pub fn inst_add(thread: &mut FungeThread) {
+	let (a, b) = thread.stack_stack.pop_two();
+	
+	// Add the values with explicit overflow wrapping
+	let c = a.wrapping_add(b);
+	thread.stack_stack.push(c);
+}
+
+/// 45: Subtract (-)
+#[inline(always)]
+pub fn inst_subtract(thread: &mut FungeThread) {
+	let (a, b) = thread.stack_stack.pop_two();
+	
+	// Subtract the values with explicit overflow wrapping
+	let c = b.wrapping_sub(a); // As per spec: Subtract first from second
+	thread.stack_stack.push(c);
+}
+
+/// 47: Divide (/)
+#[inline(always)]
+pub fn inst_divide(thread: &mut FungeThread) {
+	let (a, b) = thread.stack_stack.pop_two();
+	
+	// Divide the values with explicit overflow wrapping
+	let c = b.wrapping_div(a); // As per spec: Divide second by first
+	thread.stack_stack.push(c);
+}
+
 /// 44: Output char (,)
 #[inline(always)]
 pub fn inst_output_char(thread: &mut FungeThread, charout: &mut dyn Write) {

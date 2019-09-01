@@ -76,6 +76,10 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 				/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
 				/* , */ 44 => insts::inst_output_char(thread, self.charout),
 				/* . */ 46 => insts::inst_output_integer(thread, self.charout),
+				/* * */ 42 => insts::inst_multiply(thread),
+				/* + */ 43 => insts::inst_add(thread),
+				/* - */ 45 => insts::inst_subtract(thread),
+				/* / */ 47 => insts::inst_divide(thread),
 				/* ` */ 96 => insts::inst_greater_than(thread),
 				/* z */ 122 => {/* No-op */}
 				
