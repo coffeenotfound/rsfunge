@@ -23,5 +23,6 @@ pub mod final_ref;
 
 fn main() {
 	// Start the program
-	crate::cli::start();
+	let exit_code = crate::cli::start();
+	std::process::exit(exit_code);
 }

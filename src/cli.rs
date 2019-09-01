@@ -29,14 +29,14 @@ impl Display for ArgError {
 	}
 }
 
-pub fn start() {
+pub fn start() -> i32 {
 	// Handle cli
 	let run_options: RunOptions;
 	if let Ok(options) = parse_cli() {
 		run_options = options;
 	}
 	else {
-		return;
+		return -1;
 	}
 	
 	// Load inital code
@@ -59,6 +59,15 @@ pub fn start() {
 	
 	// Transfer control to interpreter and start execution
 	interpreter.start_execution();
+	
+	// Exit with exit code
+	let exit_code = if let Some(code) = interpreter.get_programmatic_exit_code() {
+		code
+	}
+	else {
+		0
+	};
+	return exit_code;
 }
 
 fn parse_cli() -> Result<RunOptions, impl error::Error> {

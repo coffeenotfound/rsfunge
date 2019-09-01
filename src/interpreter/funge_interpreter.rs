@@ -16,6 +16,9 @@ pub struct FungeInterpreter<'s, 'io> {
 	
 	charout: &'io mut dyn Write,
 	charin: &'io mut dyn Read,
+	
+	programatically_quit: bool,
+	quit_exit_code: i32,
 }
 
 impl<'s, 'io> FungeInterpreter<'s, 'io> {
@@ -28,12 +31,24 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 			dialect_mode: code_source.get_dialect(),
 			charout,
 			charin,
+			
+			programatically_quit: false,
+			quit_exit_code: 0,
 		};
 		
 		// Create initial thread
 		interpreter.create_thread(Vector3::new(), Vector3::new_xyz(1, 0, 0));
 		
 		return interpreter;
+	}
+	
+	pub fn get_programmatic_exit_code(&self) -> Option<i32> {
+		if self.programatically_quit {
+			return Some(self.quit_exit_code);
+		}
+		else {
+			return None;
+		}
 	}
 	
 	/// Starts the execution of this interpreter by transferring
