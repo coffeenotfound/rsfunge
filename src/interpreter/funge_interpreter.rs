@@ -77,20 +77,45 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 			valid_instruction = true;
 			
 			match instruction {
-				/* 0...9 */ n @ 48..=57 => insts::inst_push_number(thread, n - 48),
-				/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
 				/* ! */ 33 => insts::inst_logical_not(thread),
 				/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
-				/* , */ 44 => insts::inst_output_char(thread, self.charout),
-				/* . */ 46 => insts::inst_output_integer(thread, self.charout),
+				/* $ */ 36 => insts::inst_pop(thread),
+				/* % */ 37 => insts::inst_remainder(thread),
+				/* ' */ 39 => insts::inst_fetch_character(thread, &mut self.funge_space),
 				/* * */ 42 => insts::inst_multiply(thread),
 				/* + */ 43 => insts::inst_add(thread),
+				/* , */ 44 => insts::inst_output_char(thread, &mut self.charout),
 				/* - */ 45 => insts::inst_subtract(thread),
 				/* / */ 47 => insts::inst_divide(thread),
+				/* . */ 46 => insts::inst_output_integer(thread, &mut self.charout),
+				/* : */ 58 => insts::inst_duplicate(thread),
+				/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
+				/* \ */ 92 => insts::inst_swap(thread),
 				/* ` */ 96 => insts::inst_greater_than(thread),
+				/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
+				/* n */ 110 => insts::inst_clear_stack(thread),
+				/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, self.dialect_mode),
+				/* q */ 113 => {
+					self.programatically_quit = true;
+					self.quit_exit_code = thread.stack_stack.pop();
+				}
+				/* r */ 114 => insts::inst_reflect(thread),
+				/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
 				/* z */ 122 => {/* No-op */}
 				
 				/* @ */ 64 => panic!("[[Stop instruction]]"),
+				/* A...Z */ n @ 65..=90 => {
+					// TODO: Implement properly
+					// Reflect delta
+					let d = &mut thread.delta;
+					d.set_x(-d.x());
+					d.set_y(-d.y());
+					d.set_z(-d.z());
+				}
+				
+				/* 0...9 */ n @ 48..=57 => insts::inst_push_number(thread, n - 48),
+				/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
+				
 				_ => {
 					// Invalid (or implmented) instruction so set flag
 					valid_instruction = false
