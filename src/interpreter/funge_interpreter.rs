@@ -42,7 +42,8 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 	/// is running.
 	pub fn start_execution(&mut self) {
 		// Main execution loop
-		loop {
+		'mainloop:
+		while self.threads.num() > 0 {
 			// Execute next tick with each thread
 			let mut i = 0;
 			while i < self.threads.num() {
@@ -55,6 +56,9 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 				i += 1;
 			}
 		}
+		
+		// Log
+		print!("Main loop terminated");
 	}
 	
 	#[inline]
