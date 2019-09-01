@@ -17,4 +17,8 @@ impl CodeSource {
 	pub fn get_path(&self) -> &Path {
 		self.path.as_path()
 	}
+	
+	pub fn get_dialect(&self) -> FungeDialect {
+		self.dialect
+	}
 }
