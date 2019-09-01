@@ -1,9 +1,10 @@
-use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList};
+use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList, FungeThread};
 use crate::io::{CodeBuffer, CodeSource, LineTerminator};
 use crate::vector::Vector3;
 use crate::interpreter::instruction::insts;
 use std::io::{Write, Read};
 use std::num::Wrapping;
+use crate::FungeDialect;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
@@ -11,6 +12,7 @@ pub struct FungeInterpreter<'s, 'io> {
 	code_source: CodeSource,
 	threads: ThreadList<'s>,
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
+	dialect_mode: FungeDialect,
 	
 	charout: &'io mut dyn Write,
 	charin: &'io mut dyn Read,
@@ -23,6 +25,7 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 			code_source,
 			threads: ThreadList::new(),
 			funge_space: FungeSpace::new(),
+			dialect_mode: code_source.get_dialect(),
 			charout,
 			charin,
 		};
