@@ -164,8 +164,8 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 	}
 	
 	pub fn create_thread(&mut self, ip: InstructionPointer, delta: InstructionDelta) {
-//		let thread = FungeThread::new(ip, delta);
-//		self.threads.push(thread);
+		let thread = FungeThread::new(ip, delta);
+		self.threads.test_add(thread); // TODO: Implement this properly
 	}
 }
 
