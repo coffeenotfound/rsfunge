@@ -141,14 +141,17 @@ impl<'s, 'io> FungeInterpreter<'s, 'io> {
 		'line_loop:
 		for line in code.lines.iter() {
 			// Put line values into funge space
-			for (x, value) in line.data.iter().enumerate() {
-				let cell_value = *value as i32; // Reinterpret u32 codepoint as i32 cell value
+			for (x, raw_value) in line.data.iter().enumerate() {
+				let cell_value = *raw_value as i32; // Reinterpret u32 codepoint as i32 cell value
 				
-				let mut address = FungeAddress::new_xyz(x as i32, 0, 0);
-				address.add_wrapping(&offset);
-				
-				// Write cell
-				self.funge_space.write_cell(&address, cell_value);
+				// Only overwrite cell if code cell is not a space (32)
+				if cell_value != 32 {
+					let mut address = FungeAddress::new_xyz(x as i32 + position.x(), position.y(), position.z());
+					address.add_wrapping(&offset);
+					
+					// Write cell
+					self.funge_space.write_cell(&address, cell_value);
+				}
 			}
 			
 			// Process terminator
