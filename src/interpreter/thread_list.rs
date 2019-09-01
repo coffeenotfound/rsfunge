@@ -22,6 +22,10 @@ impl<'s> ThreadList<'s> {
 	pub fn num(&self) -> u32 {
 		return self.threads.len() as u32;
 	}
+	
+	pub fn test_add(&mut self, thread: FungeThread<'s>) {
+		self.threads.push(thread);
+	}
 }
 
 //impl<'s> std::ops::Index<usize> for ThreadList<'s> {
