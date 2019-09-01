@@ -33,7 +33,7 @@ pub struct CodeBufferLine {
 impl CodeBufferLine {
 	pub fn new(capacity: u32) -> Self {
 		return CodeBufferLine {
-			data: vec![32; (capacity as usize)],
+			data: Vec::with_capacity(capacity as usize),
 			terminator: LineTerminator::End,
 		}
 	}
