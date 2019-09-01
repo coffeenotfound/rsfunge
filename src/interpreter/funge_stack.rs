@@ -25,6 +25,11 @@ impl<V: FungeValue> FungeStack<V> {
 		return self.data.pop();
 	}
 	
+	#[inline]
+	pub fn clear(&mut self) {
+		self.data.clear();
+	}
+	
 	pub fn new() -> Self {
 		return FungeStack {
 			data: Vec::new(),
