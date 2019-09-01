@@ -6,6 +6,7 @@ pub struct CodeSource {
 	path: PathBuf,
 	dialect: FungeDialect,
 }
+
 impl CodeSource {
 	pub fn new(path: PathBuf, dialect: FungeDialect) -> Self {
 		CodeSource {
