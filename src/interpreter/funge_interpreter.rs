@@ -149,6 +149,7 @@ impl<'s> FungeInterpreter<'s> {
 				/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
 				/* \ */ 92 => insts::inst_swap(thread),
 				/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
+				/* _ */ 95 => insts::inst_east_west_if(thread),
 				/* ` */ 96 => insts::inst_greater_than(thread),
 				/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
 				/* n */ 110 => insts::inst_clear_stack(thread),
@@ -161,6 +162,7 @@ impl<'s> FungeInterpreter<'s> {
 				/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
 				/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
 				/* z */ 122 => {/* No-op */}
+				/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, self.dialect_mode),
 				
 				/* @ */ 64 => panic!("[[Stop instruction]]"),
 				/* A...Z */ n @ 65..=90 => {

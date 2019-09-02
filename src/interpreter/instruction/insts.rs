@@ -169,6 +169,42 @@ pub fn inst_go_south(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
 	};
 }
 
+/// 95: East west if (_)
+#[inline(always)]
+pub fn inst_east_west_if(thread: &mut FungeThread) {
+	let value = thread.stack_stack.pop();
+	
+	// If zero, go east (>)
+	if value == 0 {
+		thread.delta = InstructionDelta::new_xyz(1, 0, 0);
+	}
+	// If non-zero, go west (<)
+	else {
+		thread.delta = InstructionDelta::new_xyz(-1, 0, 0);
+	}
+}
+
+/// 124: North south if (|)
+#[inline(always)]
+pub fn inst_north_south_if(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	return match dialect {
+		FungeDialect::Unefunge98 => false,
+		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+			let value = thread.stack_stack.pop();
+			
+			// If zero, go south (v)
+			if value == 0 {
+				thread.delta = InstructionDelta::new_xyz(0, 1, 0);
+			}
+			// If non-zero, go north (^)
+			else {
+				thread.delta = InstructionDelta::new_xyz(0, -1, 0);
+			}
+			true
+		}
+	};
+}
+
 /// 63: Go away (?)
 #[inline(always)]
 pub fn inst_go_away(thread: &mut FungeThread, dialect: FungeDialect) {
