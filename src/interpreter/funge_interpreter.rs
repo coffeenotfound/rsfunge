@@ -97,7 +97,7 @@ impl<'s> FungeInterpreter<'s> {
 			instruction = self.funge_space.read_cell(&thread.ip);
 			
 			match instruction {
-				/*   */ 32 => {{
+				/* space */ 32 => {{
 					// Search for next non-space instruction
 					let mut pos = thread.ip; // Copy ip
 					while {
