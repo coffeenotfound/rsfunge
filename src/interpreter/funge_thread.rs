@@ -12,7 +12,7 @@ pub struct FungeThread<'s> {
 	
 	_phantom: PhantomData<(&'s u8)>,
 	
-//	pub page_key_cache: FungeSpacePage
+//	pub page_key_cache: FungeSpacePage,
 }
 
 impl<'s> FungeThread<'s> {
