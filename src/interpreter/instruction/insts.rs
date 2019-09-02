@@ -129,6 +129,46 @@ pub fn inst_duplicate(thread: &mut FungeThread) {
 	thread.stack_stack.push(cell);
 }
 
+/// 60: Go west (<)
+#[inline(always)]
+pub fn inst_go_west(thread: &mut FungeThread) {
+	// Set delta
+	thread.delta = InstructionDelta::new_xyz(-1, 0, 0);
+}
+
+/// 62: Go east (>)
+#[inline(always)]
+pub fn inst_go_east(thread: &mut FungeThread) {
+	// Set delta
+	thread.delta = InstructionDelta::new_xyz(1, 0, 0);
+}
+
+/// 94: Go north (^)
+#[inline(always)]
+pub fn inst_go_north(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	return match dialect {
+		FungeDialect::Unefunge98 => false,
+		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+			// Set delta
+			thread.delta = InstructionDelta::new_xyz(0, -1, 0);
+			true
+		},
+	};
+}
+
+/// 118: Go south (v)
+#[inline(always)]
+pub fn inst_go_south(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	return match dialect {
+		FungeDialect::Unefunge98 => false,
+		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+			// Set delta
+			thread.delta = InstructionDelta::new_xyz(0, 1, 0);
+			true
+		},
+	};
+}
+
 /// 63: Go away (?)
 #[inline(always)]
 pub fn inst_go_away(thread: &mut FungeThread, dialect: FungeDialect) {

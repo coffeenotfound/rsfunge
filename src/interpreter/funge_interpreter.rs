@@ -144,8 +144,11 @@ impl<'s> FungeInterpreter<'s> {
 				/* / */ 47 => insts::inst_divide(thread),
 				/* . */ 46 => insts::inst_output_integer(thread, &mut self.charout),
 				/* : */ 58 => insts::inst_duplicate(thread),
+				/* < */ 60 => insts::inst_go_west(thread),
+				/* > */ 62 => insts::inst_go_east(thread),
 				/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
 				/* \ */ 92 => insts::inst_swap(thread),
+				/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
 				/* ` */ 96 => insts::inst_greater_than(thread),
 				/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
 				/* n */ 110 => insts::inst_clear_stack(thread),
@@ -155,6 +158,7 @@ impl<'s> FungeInterpreter<'s> {
 					self.quit_exit_code = thread.stack_stack.pop();
 				}
 				/* r */ 114 => insts::inst_reflect(thread),
+				/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
 				/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
 				/* z */ 122 => {/* No-op */}
 				
