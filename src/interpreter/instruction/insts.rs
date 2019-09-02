@@ -228,7 +228,7 @@ pub fn inst_swap(thread: &mut FungeThread) {
 }
 
 #[inline(always)]
-fn _pop_vector(toss: &mut FungeStack, dialect: FungeDialect) -> FungeAddress {
+pub fn _pop_vector(toss: &mut FungeStack, dialect: FungeDialect) -> FungeAddress {
 	let vector = match dialect {
 		// 1D
 		FungeDialect::Unefunge98 => {
