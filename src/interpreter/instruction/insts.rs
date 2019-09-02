@@ -1,7 +1,7 @@
-use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress, FungeDimension, FungeValue, FungeSpaceAccessor, FungeStack, FungeStackStack};
+use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress, FungeDimension, FungeSpaceAccessor, FungeStack, InstructionPointer};
 use crate::FungeDialect;
 use rand::Rng;
-use std::io::Write;
+use std::io::{Stdout, Stdin, Read, Write};
 
 /// 33: Logical not (!)
 #[inline(always)]
