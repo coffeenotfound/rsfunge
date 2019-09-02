@@ -78,15 +78,15 @@ impl CodeLoader {
 				};
 				
 				match char {
-					'\u{10}' => { // Line feed
+					'\n' => { // Line feed (10)
 						// Set terminator
 						current_line.terminator = LineTerminator::FeedY;
 						break 'sourceloop;
 					}
-					'\u{13}' => { // Carriage return
+					'\r' => { // Carriage return (13)
 						// Check if next char is line feed to make it a carriage return, line feed combo
 						if let Some(n) = iter.peek() {
-							if *n == '\u{10}' {
+							if *n == '\n' {
 								// Consume line feed
 								iter.next();
 							}
@@ -96,7 +96,7 @@ impl CodeLoader {
 						current_line.terminator = LineTerminator::FeedY;
 						break 'sourceloop;
 					}
-					'\u{12}' => { // Form feed, increment z coord
+					'\u{c}' => { // Form feed (12), increment z coord
 						// Set terminator
 						current_line.terminator = LineTerminator::FeedZ;
 						break 'sourceloop;
