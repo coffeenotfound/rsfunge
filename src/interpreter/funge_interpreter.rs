@@ -68,6 +68,11 @@ impl<'s> FungeInterpreter<'s> {
 				// Run thread tick
 				self.execute_thread_tick(i);
 				
+				// Exit
+				if self.programatically_quit {
+					break 'mainloop;
+				}
+				
 				// Increment index
 				i += 1;
 			}
