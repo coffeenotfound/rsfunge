@@ -2,33 +2,34 @@ use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2,
 use crate::io::{CodeBuffer, CodeSource, LineTerminator};
 use crate::vector::Vector3;
 use crate::interpreter::instruction::insts;
-use std::io::{Write, Read};
+use std::io::{Stdin, Stdout};
 use std::num::Wrapping;
 use crate::FungeDialect;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
-pub struct FungeInterpreter<'s, 'io> {
-	code_source: CodeSource,
+pub struct FungeInterpreter<'s> {
 	threads: ThreadList<'s>,
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
 	dialect_mode: FungeDialect,
+	code_source: CodeSource,
 	
-	charout: &'io mut dyn Write,
-	charin: &'io mut dyn Read,
+	charout: Stdout,
+	charin: Stdin,
 	
 	programatically_quit: bool,
 	quit_exit_code: i32,
 }
 
-impl<'s, 'io> FungeInterpreter<'s, 'io> {
-	pub fn new(code_source: CodeSource, charout: &'io mut dyn Write, charin: &'io mut dyn Read) -> Self {
+impl<'s> FungeInterpreter<'s> {
+	pub fn new(code_source: CodeSource, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
 		// Instantiate
 		let mut interpreter = FungeInterpreter {
-			code_source,
 			threads: ThreadList::new(),
 			funge_space: FungeSpace::new(),
 			dialect_mode: code_source.get_dialect(),
+			code_source,
+			
 			charout,
 			charin,
 			

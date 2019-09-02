@@ -12,6 +12,8 @@ pub mod interpreter;
 pub mod io;
 pub mod vector;
 pub mod buffer;
+//pub mod charout;
+//pub mod charin;
 
 mod funge_dialect;
 pub use funge_dialect::*;
