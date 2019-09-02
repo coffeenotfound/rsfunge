@@ -178,6 +178,11 @@ impl<'s> FungeInterpreter<'s> {
 			}
 		}
 		
+		// If an invalid instruction was encountered, act as reflect
+		if !valid_instruction {
+			insts::_reflect_delta(&mut thread.delta);
+		}
+		
 		// Move ip by delta
 		thread.ip.add_delta_wrapping(&thread.delta);
 	}
