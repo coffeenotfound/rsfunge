@@ -79,7 +79,7 @@ pub fn inst_divide(thread: &mut FungeThread) {
 
 /// 44: Output char (,)
 #[inline(always)]
-pub fn inst_output_char(thread: &mut FungeThread, charout: &mut dyn Write) {
+pub fn inst_output_char(thread: &mut FungeThread, charout: &mut Stdout) {
 	let cell = thread.stack_stack.pop();
 	
 	// Print the cell by converting it to a unicode scalar ("char") if possible
@@ -90,19 +90,29 @@ pub fn inst_output_char(thread: &mut FungeThread, charout: &mut dyn Write) {
 		}
 	}
 	
-	if let Err(e) = write!(charout, "{}", char) {
-		// Do nothing on error
+	// Act as `r` if the write failed
+	if let Err(_) = write!(charout, "{}", char) {
+		// Reflect delta
+		_reflect_delta(&mut thread.delta);
 	}
+	
+	// Try flushing charout explicitely
+	let _ = charout.flush();
 }
 
 /// 46: Output integer (.)
 #[inline(always)]
-pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut dyn Write) {
+pub fn inst_output_integer(thread: &mut FungeThread, charout: &mut Stdout) {
 	let cell = thread.stack_stack.pop();
 	
-	if let Err(e) = write!(charout, "{} ", cell as i32) { // As per spec write a space after the decimal number
-		// Do nothing on error
+	// Act as `r` if the write failed
+	if let Err(_) = write!(charout, "{} ", cell as i32) { // As per spec write a space after the decimal number
+		// Reflect delta
+		_reflect_delta(&mut thread.delta);
 	}
+	
+	// Try flushing charout explicitely
+	let _ = charout.flush();
 }
 
 /// 48...57: Push Zero, .., Push Niner (0, .., 9)
