@@ -245,14 +245,17 @@ where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	funge_space.write_cell(&position, value);
 }
 
+pub fn _reflect_delta(delta: &mut InstructionPointer) {
+	// Reflect delta
+	delta.set_x(-delta.x());
+	delta.set_y(-delta.y());
+	delta.set_z(-delta.z());
+}
+
 /// 114: Reflect (r)
 #[inline(always)]
 pub fn inst_reflect(thread: &mut FungeThread) {
-	// Reflect delta
-	let d = &mut thread.delta;
-	d.set_x(-d.x());
-	d.set_y(-d.y());
-	d.set_z(-d.z());
+	_reflect_delta(&mut thread.delta);
 }
 
 /// 120: Absolute delta (x)
