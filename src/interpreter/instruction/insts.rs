@@ -306,6 +306,22 @@ where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	toss.push(cell);
 }
 
+/// 106: Jump forward (j)
+#[inline(always)]
+pub fn inst_jump_forward(thread: &mut FungeThread) {
+	// Note that the ip is moved by this instruction but it is also incremented
+	// normally after the instruction is executed, this is per spec!
+	
+	let count = thread.stack_stack.pop();
+	
+	// Move ip
+	let d = thread.delta;
+	let ip = &mut thread.delta;
+	ip.set_x(ip.x().wrapping_add(d.x().wrapping_mul(count)));
+	ip.set_y(ip.y().wrapping_add(d.y().wrapping_mul(count)));
+	ip.set_z(ip.z().wrapping_add(d.z().wrapping_mul(count)));
+}
+
 /// 104: Go high (h)
 #[inline(always)]
 pub fn inst_go_high(thread: &mut FungeThread, dialect: FungeDialect) -> bool {

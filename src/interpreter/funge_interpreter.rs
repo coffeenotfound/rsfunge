@@ -174,7 +174,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
 					/* h */ 104 => valid_instruction = insts::inst_go_high(thread, self.dialect_mode),
 					/* i */
-					/* j */
+					/* j */ 106 => insts::inst_jump_forward(thread),
 					/* k */
 					/* l */ 108 => valid_instruction = insts::inst_go_low(thread, self.dialect_mode),
 					/* m */ 109 => valid_instruction = insts::inst_high_low_if(thread, self.dialect_mode),
