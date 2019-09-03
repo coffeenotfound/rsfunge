@@ -306,6 +306,53 @@ where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	toss.push(cell);
 }
 
+/// 104: Go high (h)
+#[inline(always)]
+pub fn inst_go_high(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Trefunge98 => {
+			// Set delta
+			thread.delta = InstructionDelta::new_xyz(0, 0, 1);
+			return true;
+		}
+		_ => return false,
+	}
+}
+
+/// 108: Go low (l)
+#[inline(always)]
+pub fn inst_go_low(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Trefunge98 => {
+			// Set delta
+			thread.delta = InstructionDelta::new_xyz(0, 0, -1);
+			return true;
+		}
+		_ => return false,
+	}
+}
+
+/// 109: High low if (m)
+#[inline(always)]
+pub fn inst_high_low_if(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Trefunge98 => {
+			let value = thread.stack_stack.pop();
+			
+			// If zero, act like go low (l)
+			if value == 0 {
+				thread.delta = InstructionDelta::new_xyz(0, 0, -1);
+			}
+			// If non-zero, act like go high (h)
+			else {
+				thread.delta = InstructionDelta::new_xyz(0, 0, 1);
+			}
+			return true;
+		}
+		_ => return false,
+	}
+}
+
 /// 110: Clear stack (n)
 #[inline(always)]
 pub fn inst_clear_stack(thread: &mut FungeThread) {

@@ -172,12 +172,12 @@ impl<'s> FungeInterpreter<'s> {
 					/* ` */ 96 => insts::inst_greater_than(thread),
 					/* -> (a...f) */
 					/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
-					/* h */
+					/* h */ 104 => valid_instruction = insts::inst_go_high(thread, self.dialect_mode),
 					/* i */
 					/* j */
 					/* k */
-					/* l */
-					/* m */
+					/* l */ 108 => valid_instruction = insts::inst_go_low(thread, self.dialect_mode),
+					/* m */ 109 => valid_instruction = insts::inst_high_low_if(thread, self.dialect_mode),
 					/* n */ 110 => insts::inst_clear_stack(thread),
 					/* o */
 					/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, self.dialect_mode),
