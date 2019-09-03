@@ -2,6 +2,8 @@ use crate::interpreter::{FungeDimension, FungeValue, FungeDim2, FungeDim3, Funge
 use std::marker::PhantomData;
 
 pub trait FungeSpaceAccessor<N, V> where N: FungeDimension, V: FungeValue {
+	fn dimensionality() -> u32;
+	
 	fn get_page_width() -> u32;
 	
 	fn get_page_capacity() -> u32;
@@ -20,6 +22,11 @@ pub struct SpaceAccessorDim2<V> {
 	_phantom: PhantomData<(V)>,
 }
 impl<V> FungeSpaceAccessor<FungeDim2, V> for SpaceAccessorDim2<V> where V: FungeValue {
+	#[inline(always)]
+	fn dimensionality() -> u32 {
+		2
+	}
+	
 	#[inline(always)]
 	fn get_page_width() -> u32 {
 		DEFAULT_PAGE_WIDTH_DIM2
@@ -63,6 +70,11 @@ pub struct SpaceAccessorDim3<V> {
 	_phantom: PhantomData<(V)>,
 }
 impl<V> FungeSpaceAccessor<FungeDim3, V> for SpaceAccessorDim3<V> where V: FungeValue {
+	#[inline(always)]
+	fn dimensionality() -> u32 {
+		3
+	}
+	
 	#[inline(always)]
 	fn get_page_width() -> u32 {
 		DEFAULT_PAGE_WIDTH_DIM3
