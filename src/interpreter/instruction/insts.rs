@@ -513,3 +513,31 @@ pub fn inst_input_character(thread: &mut FungeThread, charin: &mut Stdin) {
 	}
 }
 
+/// 117: Stack under stack (u)
+#[inline(always)]
+pub fn inst_stack_under_stack(thread: &mut FungeThread, dialect: FungeDialect) {
+	// Check if we have a soss
+	if let Some(_) = thread.stack_stack.second_stack() {
+		// Pop count from toss
+		let count = thread.stack_stack.pop();
+		
+		// Transfer cells in reverse order via pop-push loop
+		if count >= 0 {
+			for n in 0..count {
+				let val = thread.stack_stack.second_stack().unwrap().pop();
+				thread.stack_stack.top_stack().push(val);
+			}
+		}
+		else {
+			for n in 0..count {
+				let val = thread.stack_stack.top_stack().pop();
+				thread.stack_stack.second_stack().unwrap().push(val);
+			}
+		}
+	}
+	// If we don't have a soss (only one stack is on the stack stack), act like reflect (r)
+	else {
+		_reflect_delta(&mut thread.delta);
+	}
+}
+
