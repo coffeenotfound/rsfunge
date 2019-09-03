@@ -15,6 +15,19 @@ impl<V: FungeValue> FungeStackStack<V> {
 	}
 	
 	#[inline]
+	pub fn second_stack(&mut self) -> Option<&mut FungeStack<V>> {
+		if self.data.len() >= 2 {
+			unsafe {
+				let len = self.data.len();
+				return Some(self.data.get_unchecked_mut(len - 2));
+			}
+		}
+		else {
+			return None;
+		}
+	}
+	
+	#[inline]
 	pub fn push(&mut self, value: V) {
 		let top = self.top_stack();
 		top.push(value);
