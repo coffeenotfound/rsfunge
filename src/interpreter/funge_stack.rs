@@ -25,7 +25,14 @@ impl<V: FungeValue> FungeStack<V> {
 		return self.data.pop();
 	}
 	
+	/// Peeks the nth value from the top of the stack,
+	/// where 0 is the top most value.
 	#[inline]
+	pub fn peek_nth(&self, n: u32) -> Option<V> {
+		let last = self.data.len() - 1;
+		return self.data.get(last - n as usize).cloned();
+	}
+	
 	pub fn clear(&mut self) {
 		self.data.clear();
 	}
