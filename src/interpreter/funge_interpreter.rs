@@ -190,7 +190,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* t */
 					/* u */
 					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
-					/* w */
+					/* w */ 119 => valid_instruction = insts::inst_compare(thread, self.dialect_mode),
 					/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
 					/* y */
 					/* z */ 122 => {/* No-op */}

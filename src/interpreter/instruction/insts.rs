@@ -443,6 +443,31 @@ pub fn inst_turn_right(thread: &mut FungeThread, dialect: FungeDialect) -> bool 
 	}
 }
 
+/// 119: Compare (w)
+#[inline(always)]
+pub fn inst_compare(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Unefunge98 => return false,
+		_ => {
+			let (b, a) = thread.stack_stack.pop_two();
+			
+			// If a < b, act like turn left ([)
+			if a < b {
+				// Rotate delta 90° counter-clockwise
+				_rotate_delta_counterclockwise_90(&mut thread.delta);
+			}
+			// If a > b, act like turn right (])
+			else if a > b {
+				// Rotate delta 90° clockwise
+				_rotate_delta_clockwise_90(&mut thread.delta);
+			}
+			// Else don't change the delta
+			
+			return true;
+		}
+	}
+}
+
 /// 120: Absolute delta (x)
 #[inline(always)]
 pub fn inst_absolute_delta(thread: &mut FungeThread, dialect: FungeDialect) {
