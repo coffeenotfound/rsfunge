@@ -186,7 +186,7 @@ impl<'s> FungeInterpreter<'s> {
 						self.quit_exit_code = thread.stack_stack.pop();
 					}
 					/* r */ 114 => insts::inst_reflect(thread),
-					/* s */
+					/* s */ 115 => insts::inst_store_character(thread, &mut self.funge_space),
 					/* t */
 					/* u */
 					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
@@ -197,7 +197,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* { */
 					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, self.dialect_mode),
 					/* } */
-					/* ~ */
+					/* ~ */ 126 => insts::inst_input_character(thread, &mut self.charin),
 					
 					/* A...Z */ n @ 65..=90 => {
 						// TODO: Implement alphabet instructions properly

@@ -37,6 +37,20 @@ pub fn inst_fetch_character<N, A>(thread: &mut FungeThread, funge_space: &mut Fu
 	thread.ip = pos;
 }
 
+/// 115: Store character (s)
+#[inline(always)]
+pub fn inst_store_character<N, A>(thread: &mut FungeThread, funge_space: &mut FungeSpace<N, i32, A>) where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
+	// Get next pos
+	let mut pos: FungeAddress = thread.ip;
+	pos.add_wrapping(&thread.delta);
+	
+	// Pop char value
+	let value = thread.stack_stack.pop();
+	
+	// Store in funge space
+	funge_space.write_cell(&pos, value);
+}
+
 /// 42: Multiply (*)
 #[inline(always)]
 pub fn inst_multiply(thread: &mut FungeThread) {
@@ -476,5 +490,26 @@ pub fn inst_absolute_delta(thread: &mut FungeThread, dialect: FungeDialect) {
 	
 	// Assign new delta to thread
 	thread.delta = new_delta;
+}
+
+/// 126: Input character (~)
+#[inline(always)]
+pub fn inst_input_character(thread: &mut FungeThread, charin: &mut Stdin) {
+	// TODO: Implement charset support, for now just use ascii
+	
+	// Read one byte (one ascii char)
+	let mut read_buffer: [u8; 1] = [0; 1];
+	let read_res = charin.read_exact(&mut read_buffer);
+	
+	if let Ok(_) = read_res {
+		// Push read char onto toss
+		let char: i32 = read_buffer[0] as i32;
+		thread.stack_stack.push(char);
+	}
+	// On read error (including end of file/pipe) act as reflect
+	else {
+		// Reflect delta
+		_reflect_delta(&mut thread.delta);
+	}
 }
 
