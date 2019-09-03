@@ -33,6 +33,7 @@ impl<V: FungeValue> FungeStack<V> {
 		return self.data.get(last - n as usize).cloned();
 	}
 	
+	#[inline]
 	pub fn clear(&mut self) {
 		self.data.clear();
 	}
