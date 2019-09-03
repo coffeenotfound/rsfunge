@@ -86,18 +86,148 @@ impl<'s> FungeInterpreter<'s> {
 	fn execute_thread_tick(&mut self, thread_index: u32) {
 		let mut thread = self.threads.get_mut(thread_index).unwrap();
 		
-//		let mut move_ip = true;
-		let mut valid_instruction = false;
-		
-		// Pseudo-execute space and semicolon instruction
-		// Both take zero ticks. Do as long as there is still some left
-		let mut instruction;
-		while {
+		if !thread.string_mode {
+//			let mut move_ip = true;
+			let mut valid_instruction = false;
+			
+			let mut instruction;
+			while {
+				// Read instruction cell
+				instruction = self.funge_space.read_cell(&thread.ip);
+				
+				// Pseudo-execute space and semicolon instruction
+				// Both take zero ticks. Do as long as there is still some left
+				match instruction {
+					/* space */ 32 => {{
+						// Search for next non-space instruction
+						let mut pos = thread.ip; // Copy ip
+						while {
+							pos.add_delta_wrapping(&thread.delta);
+							(self.funge_space.read_cell(&pos) == 32)
+						} {}
+						
+						// Set thread ip to next non-space instruction
+						thread.ip = pos;
+					}; true},
+					
+					/* ; */ 59 => {{
+						// Search for next non-space instruction
+						let mut pos = thread.ip; // Copy ip
+						while {
+							pos.add_delta_wrapping(&thread.delta);
+							(self.funge_space.read_cell(&pos) != 59)
+						} {}
+						
+						// Move ip to next actual instruction
+						pos.add_delta_wrapping(&thread.delta);
+						
+						// Set thread ip to next non-space instruction
+						thread.ip = pos;
+					}; true},
+					_ => false,
+				}
+			} {}
+			
+			// Execute instruction
+			if (32 < instruction) && (instruction <= 126) {
+				valid_instruction = true;
+				
+				match instruction {
+					/* ! */ 33 => insts::inst_logical_not(thread),
+					/* " */ 34 => {
+						// Enable string mode
+						thread.string_mode = true;
+					}
+					/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
+					/* $ */ 36 => insts::inst_pop(thread),
+					/* % */ 37 => insts::inst_remainder(thread),
+					/* & */
+					/* ' */ 39 => insts::inst_fetch_character(thread, &mut self.funge_space),
+					/* ( */
+					/* ) */
+					/* * */ 42 => insts::inst_multiply(thread),
+					/* + */ 43 => insts::inst_add(thread),
+					/* , */ 44 => insts::inst_output_char(thread, &mut self.charout),
+					/* - */ 45 => insts::inst_subtract(thread),
+					/* . */ 46 => insts::inst_output_integer(thread, &mut self.charout),
+					/* / */ 47 => insts::inst_divide(thread),
+					/* -> (0...9) */
+					/* : */ 58 => insts::inst_duplicate(thread),
+					/* -> (;) */
+					/* < */ 60 => insts::inst_go_west(thread),
+					/* = */
+					/* > */ 62 => insts::inst_go_east(thread),
+					/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
+					/* @ */ 64 => panic!("[[Stop instruction]]"),
+					/* -> (A...Z) */
+					/* [ */
+					/* \ */ 92 => insts::inst_swap(thread),
+					/* ] */
+					/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
+					/* _ */ 95 => insts::inst_east_west_if(thread),
+					/* ` */ 96 => insts::inst_greater_than(thread),
+					/* -> (a...f) */
+					/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
+					/* h */
+					/* i */
+					/* j */
+					/* k */
+					/* l */
+					/* m */
+					/* n */ 110 => insts::inst_clear_stack(thread),
+					/* o */
+					/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, self.dialect_mode),
+					/* q */ 113 => {
+						self.programatically_quit = true;
+						self.quit_exit_code = thread.stack_stack.pop();
+					}
+					/* r */ 114 => insts::inst_reflect(thread),
+					/* s */
+					/* t */
+					/* u */
+					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
+					/* w */
+					/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
+					/* y */
+					/* z */ 122 => {/* No-op */}
+					/* { */
+					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, self.dialect_mode),
+					/* } */
+					/* ~ */
+					
+					/* A...Z */ n @ 65..=90 => {
+						// TODO: Implement alphabet instructions properly
+						// Reflect delta
+						let d = &mut thread.delta;
+						d.set_x(-d.x());
+						d.set_y(-d.y());
+						d.set_z(-d.z());
+					}
+					
+					/* 0...9 */ n @ 48..=57 => insts::inst_push_number(thread, n - 48),
+					/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
+					
+					_ => {
+						// Invalid (or implmented) instruction so set flag
+						valid_instruction = false
+					},
+				}
+			}
+			
+			// If an invalid instruction was encountered, act as reflect
+			if !valid_instruction {
+				insts::_reflect_delta(&mut thread.delta);
+			}
+			
+			// Move ip by delta
+			thread.ip.add_delta_wrapping(&thread.delta);
+		}
+		else { // If in string mode
 			// Read instruction cell
-			instruction = self.funge_space.read_cell(&thread.ip);
+			let instruction = self.funge_space.read_cell(&thread.ip);
 			
 			match instruction {
-				/* space */ 32 => {{
+				/* space */ 32 => {
 					// Search for next non-space instruction
 					let mut pos = thread.ip; // Copy ip
 					while {
@@ -107,90 +237,23 @@ impl<'s> FungeInterpreter<'s> {
 					
 					// Set thread ip to next non-space instruction
 					thread.ip = pos;
-				}; true},
-				
-				/* ; */ 59 => {{
-					// Search for next non-space instruction
-					let mut pos = thread.ip; // Copy ip
-					while {
-						pos.add_delta_wrapping(&thread.delta);
-						(self.funge_space.read_cell(&pos) != 59)
-					} {}
-					
-					// Move ip to next actual instruction
-					pos.add_delta_wrapping(&thread.delta);
-					
-					// Set thread ip to next non-space instruction
-					thread.ip = pos;
-				}; true},
-				_ => false,
-			}
-		} {}
-		
-		// Execute instruction
-		if (32 < instruction) && (instruction <= 126) {
-			valid_instruction = true;
-			
-			match instruction {
-				/* ! */ 33 => insts::inst_logical_not(thread),
-				/* # */ 35 => thread.ip.add_delta_wrapping(&thread.delta),
-				/* $ */ 36 => insts::inst_pop(thread),
-				/* % */ 37 => insts::inst_remainder(thread),
-				/* ' */ 39 => insts::inst_fetch_character(thread, &mut self.funge_space),
-				/* * */ 42 => insts::inst_multiply(thread),
-				/* + */ 43 => insts::inst_add(thread),
-				/* , */ 44 => insts::inst_output_char(thread, &mut self.charout),
-				/* - */ 45 => insts::inst_subtract(thread),
-				/* / */ 47 => insts::inst_divide(thread),
-				/* . */ 46 => insts::inst_output_integer(thread, &mut self.charout),
-				/* : */ 58 => insts::inst_duplicate(thread),
-				/* < */ 60 => insts::inst_go_west(thread),
-				/* > */ 62 => insts::inst_go_east(thread),
-				/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
-				/* \ */ 92 => insts::inst_swap(thread),
-				/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
-				/* _ */ 95 => insts::inst_east_west_if(thread),
-				/* ` */ 96 => insts::inst_greater_than(thread),
-				/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
-				/* n */ 110 => insts::inst_clear_stack(thread),
-				/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, self.dialect_mode),
-				/* q */ 113 => {
-					self.programatically_quit = true;
-					self.quit_exit_code = thread.stack_stack.pop();
 				}
-				/* r */ 114 => insts::inst_reflect(thread),
-				/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
-				/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
-				/* z */ 122 => {/* No-op */}
-				/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, self.dialect_mode),
-				
-				/* @ */ 64 => panic!("[[Stop instruction]]"),
-				/* A...Z */ n @ 65..=90 => {
-					// TODO: Implement properly
-					// Reflect delta
-					let d = &mut thread.delta;
-					d.set_x(-d.x());
-					d.set_y(-d.y());
-					d.set_z(-d.z());
+				/* " */ 34 => {
+					// Disable string mode
+					thread.string_mode = false;
+					
+					// Advance ip
+					thread.ip.add_delta_wrapping(&thread.delta);
 				}
-				
-				/* 0...9 */ n @ 48..=57 => insts::inst_push_number(thread, n - 48),
-				/* a...f */ n @ 97..=102 => insts::inst_push_number(thread, n - 97),
-				
 				_ => {
-					// Invalid (or implmented) instruction so set flag
-					valid_instruction = false
-				},
+					// Push char as value onto the stack
+					thread.stack_stack.push(instruction);
+					
+					// Advance ip
+					thread.ip.add_delta_wrapping(&thread.delta);
+				}
 			}
 		}
-		
-		// If an invalid instruction was encountered, act as reflect
-		if !valid_instruction {
-			insts::_reflect_delta(&mut thread.delta);
-		}
-		
-		// Move ip by delta
-		thread.ip.add_delta_wrapping(&thread.delta);
 	}
 	
 	pub fn load_initial_code(&mut self, code: &CodeBuffer) {
