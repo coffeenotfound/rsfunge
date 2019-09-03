@@ -6,6 +6,10 @@ use std::io::{Stdin, Stdout};
 use std::num::Wrapping;
 use crate::FungeDialect;
 
+/// The handprint of rsfunge, "RSFN"
+pub const RSFUNGE_HANDPRINT: u32 = 0x5253464e;
+pub const RSFUNGE_VERSION: u32 = 100;
+
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
 pub struct FungeInterpreter<'s> {
