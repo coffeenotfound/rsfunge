@@ -344,6 +344,42 @@ pub fn inst_reflect(thread: &mut FungeThread) {
 	_reflect_delta(&mut thread.delta);
 }
 
+pub fn _rotate_delta_clockwise_90(delta: &mut InstructionDelta) {
+	let d = delta;
+	*d = InstructionDelta::new_xyz(-d.y(), d.x(), d.z());
+}
+
+pub fn _rotate_delta_counterclockwise_90(delta: &mut InstructionDelta) {
+	let d = delta;
+	*d = InstructionDelta::new_xyz(d.y(), -d.x(), d.z());
+}
+
+/// 91: Turn left ([)
+#[inline(always)]
+pub fn inst_turn_left(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Unefunge98 => return false,
+		_ => {
+			// Rotate delta 90° counter-clockwise
+			_rotate_delta_counterclockwise_90(&mut thread.delta);
+			return true;
+		}
+	}
+}
+
+/// 93: Turn left (])
+#[inline(always)]
+pub fn inst_turn_right(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
+	match dialect {
+		FungeDialect::Unefunge98 => return false,
+		_ => {
+			// Rotate delta 90° clockwise
+			_rotate_delta_clockwise_90(&mut thread.delta);
+			return true;
+		}
+	}
+}
+
 /// 120: Absolute delta (x)
 #[inline(always)]
 pub fn inst_absolute_delta(thread: &mut FungeThread, dialect: FungeDialect) {

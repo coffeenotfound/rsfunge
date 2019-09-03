@@ -164,9 +164,9 @@ impl<'s> FungeInterpreter<'s> {
 					/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
 					/* @ */ 64 => panic!("[[Stop instruction]]"),
 					/* -> (A...Z) */
-					/* [ */
+					/* [ */ 91 => valid_instruction = insts::inst_turn_left(thread, self.dialect_mode),
 					/* \ */ 92 => insts::inst_swap(thread),
-					/* ] */
+					/* ] */ 93 => valid_instruction = insts::inst_turn_right(thread, self.dialect_mode),
 					/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
 					/* _ */ 95 => insts::inst_east_west_if(thread),
 					/* ` */ 96 => insts::inst_greater_than(thread),
