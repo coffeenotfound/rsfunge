@@ -621,6 +621,12 @@ pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread
 	}
 }
 
+/// 38: Input integer (&)
+#[inline(always)]
+pub fn inst_input_integer(thread: &mut FungeThread, charin: &mut Stdin) {
+	// TODO: Implement (read into char array with fixed size of the longest possible number, parse with custom implementation that checks for overflow)
+}
+
 /// 126: Input character (~)
 #[inline(always)]
 pub fn inst_input_character(thread: &mut FungeThread, charin: &mut Stdin) {
