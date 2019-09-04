@@ -196,7 +196,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, DIMS),
 					/* w */ 119 => valid_instruction = insts::inst_compare(thread, DIMS),
 					/* x */ 120 => insts::inst_absolute_delta(thread, DIMS),
-					/* y */
+					/* y */ 121 => insts::inst_get_sysinfo::<FungeDim2, SpaceAccessorDim2<i32>>(thread), // TODO: Use generics from interpreter
 					/* z */ 122 => {/* No-op */}
 					/* { */
 					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, DIMS),

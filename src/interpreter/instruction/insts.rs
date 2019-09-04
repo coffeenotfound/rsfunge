@@ -1,6 +1,7 @@
-use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress, FungeDimension, FungeSpaceAccessor, FungeStack, InstructionPointer};
+use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress, FungeDimension, FungeSpaceAccessor, FungeStack, InstructionPointer, RSFUNGE_HANDPRINT, RSFUNGE_VERSION};
 use rand::Rng;
 use std::io::{Stdout, Stdin, Read, Write};
+use chrono::{DateTime, Local, Datelike, Timelike};
 
 /// 33: Logical not (!)
 #[inline(always)]
@@ -491,6 +492,125 @@ pub fn inst_absolute_delta(thread: &mut FungeThread, dims: u32) {
 	
 	// Assign new delta to thread
 	thread.delta = new_delta;
+}
+
+#[inline(always)]
+pub fn _get_sysinfo_cell_num(thread: &mut FungeThread, dims: u32, stack_num: u32) -> u32 {
+	// TODO: Handle command line args and env var cells
+	let base_size = [17, 22, 25][dims as usize];
+	let size = base_size + stack_num;
+	return size;
+}
+
+#[inline(always)]
+pub fn _get_sysinfo_cell<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread, index: u32, dims: u32, original_toss_depth: u32, stack_num: u32) -> i32 {
+	return match (index, dims) {
+		(0, _) => 0, /* flags (env) */
+		(1, _) => 4, /* num bytes per cell (global env) */
+		(2, _) => RSFUNGE_HANDPRINT as i32, /* implementation handprint (env) */
+		(3, _) => RSFUNGE_VERSION as i32, /* implementation version number (env) */
+		(4, _) => 0, /* operating paradigm (for = instruction) (global env) */ // TODO: Return the right code, according to the execute_call_mode
+		(5, _) => '/' as i32, /* path seperator char (global env) */
+		(6, _) => A::dimensionality() as i32, /* dimensionality or number of cells per vector (global env) */
+		(7, _) => 0, /* locally unique id for the current thread (ip) */ // TODO: Implement properly
+		(8, _) => 0, /* unique team number for the current thread (not applicable to rsfunge) (ip) */
+		
+		(i @ 9, 1) |
+		(i @ 9..=10, 2) |
+		(i @ 9..=11, 3) => thread.ip.elements[i as usize], /* ip of the current thread (ip) */
+		
+		(i @ 10, 1) |
+		(i @ 11..=12, 2) |
+		(i @ 12..=14, 3) => thread.delta.elements[i as usize], /* delta of the curren thread (ip) */
+		
+		(i @ 11, 1) |
+		(i @ 13..=14, 2) |
+		(i @ 15..=17, 3) => thread.get_storage_offset().elements[i as usize], /* storage offset of the current thread (ip) */
+		
+		(_i @ 12, 1) |
+		(_i @ 15..=16, 2) |
+		(_i @ 18..=20, 3) => 0, /* least point which contains a non-space cell, relative to origin (env) */
+		
+		(_i @ 13, 1) |
+		(_i @ 17..=18, 2) |
+		(_i @ 19..=21, 3) => 0, /* greatest point which contains a non-space cell, relative to the least point (env) */ // TODO: Implement calc routine (go through all funge space pages and search locally in them the least, greatest point)s
+		
+		(14, 1) |
+		(19, 2) |
+		(22, 3) => { /* current ((year - 1900) * 256 * 256) + (month * 256) + (day of month) (env) */
+			// Calculate timestamp
+			let time: DateTime<Local> = chrono::Local::now();
+			let timestamp: u32 = ((time.year() as u32 - 1900) * 256 * 256) + (time.month() as u32 * 256) + (time.day() as u32); // Use 1-based indexing for month and day
+			timestamp as i32
+		}
+		
+		(15, 1) |
+		(20, 2) |
+		(23, 3) => { /* current (hour * 256 * 256) + (minute * 256) + (second) (env) */
+			// Get time
+			let time: DateTime<Local> = chrono::Local::now();
+			let result: u32 = (time.hour() as u32 * 256 * 256) + (time.minute() as u32 * 256) + (time.second() as u32); // 0-based "indexing" for hours, minutes, seconds. Makes sense but it somehow feels wrong considering the date uses 1-based indexing
+			result as i32
+		}
+		
+		(16, 1) |
+		(21, 2) |
+		(24, 3) => {
+			stack_num as i32 /* number of stacks on the stack stack (ip) */
+		}
+		
+		// TODO: Implement command line args and env var cells
+		_ => (|| -> i32 {
+			// Stack size cells
+			let local_index = index - [17, 22, 25][dims as usize];
+			if local_index < stack_num {
+				let stack = thread.stack_stack.nth_stack(local_index).unwrap();
+				return stack.depth() as i32;
+			}
+			else {
+				unimplemented!();
+			}
+		})(),
+	};
+}
+
+/// 121: Get sysinfo (y)
+#[inline(always)]
+pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread) {
+//	let ref mut ss = thread.stack_stack;
+	
+	// The given index: Zero or negative for everything, else the 1-based cell number
+	let nth_cell = thread.stack_stack.pop();
+	
+	let dims = A::dimensionality();
+	let toss_depth = thread.stack_stack.top_stack().depth();
+	let stack_num = thread.stack_stack.num_stacks();
+	
+	// Push only specific (one-indexed) cell
+	if nth_cell > 0 {
+		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num);
+		
+		// Use specific sysinfo cell
+		if nth_cell <= syscell_num as i32 {
+			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num);
+			thread.stack_stack.push(cell);
+		}
+		// If index larger than sysinfo cell num, pick from toss
+		else {
+			let cell = thread.stack_stack.top_stack().peek_nth((nth_cell as u32 - 1) - syscell_num);
+			thread.stack_stack.push(cell.unwrap_or(0));
+		}
+	}
+	// Push all sysinfo cells
+	else {
+		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num);
+		
+		// Go through all sysinfo cells and push
+		for i in 0..syscell_num {
+			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num);
+			thread.stack_stack.push(cell);
+		}
+	}
 }
 
 /// 126: Input character (~)
