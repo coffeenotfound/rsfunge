@@ -220,7 +220,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* z */ 122 => {/* No-op */}
 					/* { */ 123 => insts::inst_begin_block(thread, DIMS),
 					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, DIMS),
-					/* } */
+					/* } */ 125 => insts::inst_end_block(thread, DIMS),
 					/* ~ */ 126 => insts::inst_input_character(thread, &mut self.charin),
 					
 					/* A...Z */ n @ 65..=90 => {

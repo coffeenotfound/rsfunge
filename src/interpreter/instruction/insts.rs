@@ -724,3 +724,35 @@ pub fn inst_begin_block(thread: &mut FungeThread, dims: u32) {
 	thread.stroage_offset = new_storage_offset;
 }
 
+/// 125: End block ({)
+#[inline(always)]
+pub fn inst_end_block(thread: &mut FungeThread, dims: u32) {
+	let n = thread.stack_stack.pop();
+	
+	if let Some(psoss) = thread.stack_stack.second_stack() {
+		// Pop storage offset from soss and assign to thread
+		let new_storage_offset = _pop_vector(psoss, dims);
+		thread.stroage_offset = new_storage_offset;
+		
+		// Pop toss
+		let mut ptoss = thread.stack_stack.pop_stack().unwrap(); // Unwrap because we already know we have a ptoss
+		let new_toss = thread.stack_stack.top_stack();
+		
+		// If n > 0, transfer |n| elements from prev toss to prev soss
+		if n > 0 {
+			ptoss.transfer_to_stack(new_toss, n as u32);
+		}
+		// If n < 0, pop |n| elements of the prev soss/new toss
+		else if n < 0 {
+			for _ in 0..(-n) {
+				new_toss.pop();
+			}
+		}
+		// If n == 0, transfer no elements
+		else {}
+	}
+	// Else we don't have a soss, so act like reflect
+	else {
+		_reflect_delta(&mut thread.delta);
+	}
+}
