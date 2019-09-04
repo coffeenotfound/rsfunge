@@ -613,9 +613,9 @@ pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread
 	else {
 		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num, env_var_string, cli_arg_string);
 		
-		// Go through all sysinfo cells and push
+		// Go through all sysinfo cells in reverse so that they are on the stack in the right order
 		for i in 0..syscell_num {
-			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num, env_var_string, cli_arg_string);
+			let cell = _get_sysinfo_cell::<N, A>(thread, (syscell_num - 1) - i, dims, toss_depth, stack_num, env_var_string, cli_arg_string);
 			thread.stack_stack.push(cell);
 		}
 	}
