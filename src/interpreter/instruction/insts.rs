@@ -495,15 +495,14 @@ pub fn inst_absolute_delta(thread: &mut FungeThread, dims: u32) {
 }
 
 #[inline(always)]
-pub fn _get_sysinfo_cell_num(thread: &mut FungeThread, dims: u32, stack_num: u32) -> u32 {
-	// TODO: Handle command line args and env var cells
+pub fn _get_sysinfo_cell_num(thread: &mut FungeThread, dims: u32, stack_num: u32, env_var_string: &[u8], cli_arg_string: &[u8]) -> u32 {
 	let base_size = [17, 22, 25][dims as usize];
-	let size = base_size + stack_num;
+	let size = base_size + stack_num + env_var_string.len() as u32 + cli_arg_string.len() as u32;
 	return size;
 }
 
 #[inline(always)]
-pub fn _get_sysinfo_cell<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread, index: u32, dims: u32, original_toss_depth: u32, stack_num: u32) -> i32 {
+pub fn _get_sysinfo_cell<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread, index: u32, dims: u32, original_toss_depth: u32, stack_num: u32, env_var_string: &[u8], cli_arg_string: &[u8]) -> i32 {
 	return match (index, dims) {
 		(0, _) => 0, /* flags (env) */
 		(1, _) => 4, /* num bytes per cell (global env) */
@@ -559,7 +558,6 @@ pub fn _get_sysinfo_cell<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(threa
 			stack_num as i32 /* number of stacks on the stack stack (ip) */
 		}
 		
-		// TODO: Implement command line args and env var cells
 		_ => (|| -> i32 {
 			// Stack size cells
 			let local_index = index - [17, 22, 25][dims as usize];
@@ -567,18 +565,28 @@ pub fn _get_sysinfo_cell<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(threa
 				let stack = thread.stack_stack.nth_stack(local_index).unwrap();
 				return stack.depth() as i32;
 			}
-			else {
-				unimplemented!();
+			
+			// Cli arg string
+			let local_index = local_index - stack_num;
+			if local_index < cli_arg_string.len() as u32 {
+				return cli_arg_string[local_index as usize] as i32;
 			}
+			
+			// Env var string
+			let local_index = local_index - cli_arg_string.len() as u32;
+			if local_index < env_var_string.len() as u32 {
+				return env_var_string[local_index as usize] as i32;
+			}
+			
+			// Else, shouldn't be reached
+			unimplemented!("Should never be reached");
 		})(),
 	};
 }
 
 /// 121: Get sysinfo (y)
 #[inline(always)]
-pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread) {
-//	let ref mut ss = thread.stack_stack;
-	
+pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread: &mut FungeThread, env_var_string: &[u8], cli_arg_string: &[u8]) {
 	// The given index: Zero or negative for everything, else the 1-based cell number
 	let nth_cell = thread.stack_stack.pop();
 	
@@ -588,11 +596,11 @@ pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread
 	
 	// Push only specific (one-indexed) cell
 	if nth_cell > 0 {
-		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num);
+		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num, env_var_string, cli_arg_string);
 		
 		// Use specific sysinfo cell
 		if nth_cell <= syscell_num as i32 {
-			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num);
+			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num, env_var_string, cli_arg_string);
 			thread.stack_stack.push(cell);
 		}
 		// If index larger than sysinfo cell num, pick from toss
@@ -603,11 +611,11 @@ pub fn inst_get_sysinfo<N: FungeDimension, A: FungeSpaceAccessor<N, i32>>(thread
 	}
 	// Push all sysinfo cells
 	else {
-		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num);
+		let syscell_num = _get_sysinfo_cell_num(thread, dims, stack_num, env_var_string, cli_arg_string);
 		
 		// Go through all sysinfo cells and push
 		for i in 0..syscell_num {
-			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num);
+			let cell = _get_sysinfo_cell::<N, A>(thread, nth_cell as u32 - 1, dims, toss_depth, stack_num, env_var_string, cli_arg_string);
 			thread.stack_stack.push(cell);
 		}
 	}

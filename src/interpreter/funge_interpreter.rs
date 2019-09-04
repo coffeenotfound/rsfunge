@@ -5,6 +5,7 @@ use crate::interpreter::instruction::insts;
 use std::io::{Stdin, Stdout};
 use std::num::Wrapping;
 use crate::FungeDialect;
+use std::env;
 
 /// The handprint of rsfunge, "RSFN"
 pub const RSFUNGE_HANDPRINT: u32 = 0x5253464e;
@@ -23,10 +24,24 @@ pub struct FungeInterpreter<'s> {
 	
 	programatically_quit: bool,
 	quit_exit_code: i32,
+	
+	/// A single null terminated env var string with null terminated "name=value" variables
+	env_var_string: Vec<u8>,
+	
+	/// A double null terminated cli arg string with null terminated strings
+	cli_arg_string: Vec<u8>,
 }
 
 impl<'s> FungeInterpreter<'s> {
 	pub fn new(code_source: CodeSource, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
+		// Build cli arg string // TODO: Include args aswell
+		let mut cli_arg_string = Vec::from(code_source.get_path().file_stem().unwrap().to_os_string().into_string().unwrap().as_bytes());
+		cli_arg_string.push(0); // Null terminate program name
+		(|s: &mut Vec<u8>| { s.push(0); s.push(0); })(&mut cli_arg_string); // Double null terminate arg string
+		
+		// Build env var string
+		let env_var_string = Self::make_env_var_string();
+		
 		// Instantiate
 		let mut interpreter = FungeInterpreter {
 			threads: ThreadList::new(),
@@ -39,6 +54,9 @@ impl<'s> FungeInterpreter<'s> {
 			
 			programatically_quit: false,
 			quit_exit_code: 0,
+			
+			env_var_string,
+			cli_arg_string,
 		};
 		
 		// Create initial thread
@@ -196,7 +214,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, DIMS),
 					/* w */ 119 => valid_instruction = insts::inst_compare(thread, DIMS),
 					/* x */ 120 => insts::inst_absolute_delta(thread, DIMS),
-					/* y */ 121 => insts::inst_get_sysinfo::<FungeDim2, SpaceAccessorDim2<i32>>(thread), // TODO: Use generics from interpreter
+					/* y */ 121 => insts::inst_get_sysinfo::<FungeDim2, SpaceAccessorDim2<i32>>(thread, self.env_var_string.as_slice(), self.cli_arg_string.as_slice()), // TODO: Use generics from interpreter
 					/* z */ 122 => {/* No-op */}
 					/* { */
 					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, DIMS),
@@ -318,6 +336,33 @@ impl<'s> FungeInterpreter<'s> {
 	pub fn create_thread(&mut self, ip: InstructionPointer, delta: InstructionDelta) {
 		let thread = FungeThread::new(ip, delta);
 		self.threads.test_add(thread); // TODO: Implement this properly
+	}
+	
+	pub fn make_env_var_string() -> Vec<u8> {
+		// Allocate string
+		let mut string = Vec::<u8>::with_capacity(1024);
+		
+		// Iterate over env vars
+		for (name, value) in env::vars() {
+			let name_slice = name.as_bytes();
+			let value_slice = value.as_bytes();
+			
+			// Ensure string capacity
+			string.reserve(name_slice.len() + value_slice.len() + 2);
+			
+			// Push in format "name=value\0"
+			string.extend_from_slice(name_slice);
+			string.push(b'=');
+			string.extend_from_slice(value_slice);
+			string.push(b'\0');
+		}
+		
+		// Null terminate entire string
+		string.push(b'\0');
+		
+		// Shrink string to fit
+		string.shrink_to_fit();
+		return string;
 	}
 }
 
