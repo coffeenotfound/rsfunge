@@ -55,6 +55,20 @@ impl<V: FungeValue> FungeStackStack<V> {
 //		};
 	}
 	
+	/// Returns the nth stack from the top in this stack stack or None
+	/// if the index is greater than or equal the number of stacks.
+	/// 0 is the TOSS, 1 the SOSS, etc.
+	#[inline]
+	pub fn nth_stack(&mut self, index: u32) -> Option<&mut FungeStack<V>> {
+		let last = self.data.len() - 1;
+		return self.data.get_mut(last - index as usize);
+	}
+	
+	#[inline]
+	pub fn num_stacks(&self) -> u32 {
+		self.data.len() as u32
+	}
+	
 	pub fn new() -> Self {
 		let mut data = Vec::with_capacity(8);
 		data.push(FungeStack::new());
