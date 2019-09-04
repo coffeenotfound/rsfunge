@@ -192,7 +192,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* r */ 114 => insts::inst_reflect(thread),
 					/* s */ 115 => insts::inst_store_character(thread, &mut self.funge_space),
 					/* t */
-					/* u */ 117 => insts::inst_stack_under_stack(thread, self.dialect_mode),
+					/* u */ 117 => insts::inst_stack_under_stack(thread),
 					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, DIMS),
 					/* w */ 119 => valid_instruction = insts::inst_compare(thread, DIMS),
 					/* x */ 120 => insts::inst_absolute_delta(thread, DIMS),

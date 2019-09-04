@@ -516,7 +516,7 @@ pub fn inst_input_character(thread: &mut FungeThread, charin: &mut Stdin) {
 
 /// 117: Stack under stack (u)
 #[inline(always)]
-pub fn inst_stack_under_stack(thread: &mut FungeThread, dialect: FungeDialect) {
+pub fn inst_stack_under_stack(thread: &mut FungeThread) {
 	// Check if we have a soss
 	if let Some(_) = thread.stack_stack.second_stack() {
 		// Pop count from toss
