@@ -60,6 +60,16 @@ impl<V: FungeValue> FungeStackStack<V> {
 		self.data.push(stack);
 	}
 	
+	#[inline]
+	pub fn pop_stack(&mut self) -> Option<FungeStack<V>> {
+		if self.data.len() > 1 {
+			self.data.pop()
+		}
+		else {
+			None
+		}
+	}
+	
 	/// Returns the nth stack from the top in this stack stack or None
 	/// if the index is greater than or equal the number of stacks.
 	/// 0 is the TOSS, 1 the SOSS, etc.
