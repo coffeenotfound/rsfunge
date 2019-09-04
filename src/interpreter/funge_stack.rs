@@ -38,6 +38,11 @@ impl<V: FungeValue> FungeStack<V> {
 		self.data.clear();
 	}
 	
+	#[inline]
+	pub fn depth(&self) -> u32 {
+		self.data.len() as u32
+	}
+	
 	pub fn new() -> Self {
 		return FungeStack {
 			data: Vec::new(),
