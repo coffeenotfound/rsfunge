@@ -524,13 +524,13 @@ pub fn inst_stack_under_stack(thread: &mut FungeThread) {
 		
 		// Transfer cells in reverse order via pop-push loop
 		if count >= 0 {
-			for n in 0..count {
+			for _ in 0..count {
 				let val = thread.stack_stack.second_stack().unwrap().pop();
 				thread.stack_stack.top_stack().push(val);
 			}
 		}
 		else {
-			for n in 0..count {
+			for _ in 0..count {
 				let val = thread.stack_stack.top_stack().pop();
 				thread.stack_stack.second_stack().unwrap().push(val);
 			}
