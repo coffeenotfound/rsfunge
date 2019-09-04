@@ -7,7 +7,7 @@ pub struct FungeThread<'s> {
 	
 	pub stack_stack: FungeStackStack,
 	
-//	pub stroage_offset: FungeAddress,
+	pub stroage_offset: FungeAddress,
 	pub string_mode: bool,
 	
 	_phantom: PhantomData<(&'s u8)>,
@@ -21,14 +21,13 @@ impl<'s> FungeThread<'s> {
 			ip,
 			delta,
 			stack_stack: FungeStackStack::new(),
-//			stroage_offset: FungeAddress::new_value(0),
+			stroage_offset: FungeAddress::new_value(0),
 			string_mode: false,
 			_phantom: PhantomData,
 		}
 	}
 	
 	pub fn get_storage_offset(&self) -> FungeAddress {
-		// TODO: Implement storage offset stack or however it works
-		return FungeAddress::new_value(0);
+		return self.stroage_offset;
 	}
 }
