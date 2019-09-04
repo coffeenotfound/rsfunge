@@ -55,6 +55,11 @@ impl<V: FungeValue> FungeStackStack<V> {
 //		};
 	}
 	
+	#[inline]
+	pub fn push_stack(&mut self, stack: FungeStack<V>) {
+		self.data.push(stack);
+	}
+	
 	/// Returns the nth stack from the top in this stack stack or None
 	/// if the index is greater than or equal the number of stacks.
 	/// 0 is the TOSS, 1 the SOSS, etc.
