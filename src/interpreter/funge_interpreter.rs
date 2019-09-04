@@ -137,6 +137,7 @@ impl<'s> FungeInterpreter<'s> {
 				// Get dims
 				const DIMS: u32 = 2; // TODO: Implement
 				
+				// Set flag
 				valid_instruction = true;
 				
 				match instruction {
