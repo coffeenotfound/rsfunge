@@ -217,7 +217,7 @@ impl<'s> FungeInterpreter<'s> {
 					_ => {
 						// Invalid (or implmented) instruction so set flag
 						valid_instruction = false
-					},
+					}
 				}
 			}
 			
