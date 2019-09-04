@@ -43,6 +43,31 @@ impl<V: FungeValue> FungeStack<V> {
 		self.data.len() as u32
 	}
 	
+	/// Transfers |count| cells from this stacks top in non-reverse order
+	/// to the given other stack. If this stack has less elements that |count|
+	/// then the transferred cells will be at the top of the other stack and
+	/// the bottom filled with zeroes until the other stack has received
+	/// |count| cells.
+	pub fn transfer_to_stack(&mut self, other: &mut FungeStack<V>, count: u32) {
+		let real_transfer_count = std::cmp::min(self.depth(), count);
+		let zeroes_count = count - real_transfer_count;
+		
+		// Reserve capacity in other stack
+		other.data.reserve(count as usize);
+		
+		// Push zeroes if needed
+		for _ in 0..zeroes_count {
+			other.push(V::default());
+		}
+		
+		// Copy cells from this stack to other
+		let transfer_start_pos = self.data.len() - real_transfer_count as usize;
+		other.data.extend_from_slice(&self.data[transfer_start_pos..]);
+		
+		// Truncate own data to simulate cell transfer
+		self.data.truncate(self.data.len() - real_transfer_count as usize)
+	}
+	
 	pub fn new() -> Self {
 		return FungeStack {
 			data: Vec::new(),
