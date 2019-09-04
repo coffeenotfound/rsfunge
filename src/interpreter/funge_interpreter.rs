@@ -34,7 +34,7 @@ pub struct FungeInterpreter<'s> {
 
 impl<'s> FungeInterpreter<'s> {
 	pub fn new(code_source: CodeSource, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
-		// Build cli arg string // TODO: Include args aswell
+		// Build cli arg string // TODO: Include real (after --) given cli args aswell
 		let mut cli_arg_string = Vec::from(code_source.get_path().file_stem().unwrap().to_os_string().into_string().unwrap().as_bytes());
 		cli_arg_string.push(0); // Null terminate program name
 		(|s: &mut Vec<u8>| { s.push(0); s.push(0); })(&mut cli_arg_string); // Double null terminate arg string
