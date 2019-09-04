@@ -670,3 +670,57 @@ pub fn inst_stack_under_stack(thread: &mut FungeThread) {
 	}
 }
 
+/// 123: Begin block ({)
+#[inline(always)]
+pub fn inst_begin_block(thread: &mut FungeThread, dims: u32) {
+	let n = thread.stack_stack.pop();
+	
+	// Get storage offset
+	let current_storage_offset: FungeAddress = thread.get_storage_offset();
+	
+	// Allocate new stack
+	let mut new_toss = FungeStack::<i32>::new();
+	
+	// If n > 0, transfer |n| elements from soss to new toss in non-reversed order
+	if n > 0 {
+		let fsoss = thread.stack_stack.top_stack();
+		fsoss.transfer_to_stack(&mut new_toss, n as u32);
+	}
+	// If n < 0, push |n| zeros onto soss
+	else if n < 0 {
+		let fsoss = thread.stack_stack.top_stack(); // Current toss is future soss
+		
+		for _ in 0..(-n) {
+			fsoss.push(0);
+		}
+	}
+	// If n == 0, don't transfer any elements
+	else {}
+	
+	// Push storage offset onto soss
+	let fsoss = thread.stack_stack.top_stack();
+	match dims {
+		1 => {
+			fsoss.push(current_storage_offset.x()); // x
+		}
+		2 => {
+			fsoss.push(current_storage_offset.y()); // y
+			fsoss.push(current_storage_offset.x()); // x
+		}
+		3 => {
+			fsoss.push(current_storage_offset.z()); // z
+			fsoss.push(current_storage_offset.y()); // y
+			fsoss.push(current_storage_offset.x()); // x
+		}
+		_ => unimplemented!(),
+	}
+	
+	// Push new toss onto the stack stack
+	thread.stack_stack.push_stack(new_toss);
+	
+	// Set new storage offset
+	let mut new_storage_offset: InstructionPointer = thread.ip;
+	new_storage_offset.add_delta_wrapping(&thread.delta);
+	thread.stroage_offset = new_storage_offset;
+}
+

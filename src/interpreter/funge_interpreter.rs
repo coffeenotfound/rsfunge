@@ -218,7 +218,7 @@ impl<'s> FungeInterpreter<'s> {
 					/* x */ 120 => insts::inst_absolute_delta(thread, DIMS),
 					/* y */ 121 => insts::inst_get_sysinfo::<FungeDim2, SpaceAccessorDim2<i32>>(thread, self.env_var_string.as_slice(), self.cli_arg_string.as_slice()), // TODO: Use generics from interpreter
 					/* z */ 122 => {/* No-op */}
-					/* { */
+					/* { */ 123 => insts::inst_begin_block(thread, DIMS),
 					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, DIMS),
 					/* } */
 					/* ~ */ 126 => insts::inst_input_character(thread, &mut self.charin),
