@@ -44,6 +44,7 @@ impl CodeLoader {
 		
 		// Read file
 		let mut string_contents = String::new();
+		#[allow(dead_code)]
 		let num_read_bytes = file.read_to_string(&mut string_contents)?;
 		
 		// TODO: Support different encodings (maybe via the rust-encoding crate)

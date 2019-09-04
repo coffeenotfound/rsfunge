@@ -16,7 +16,9 @@ pub const RSFUNGE_VERSION: u32 = 100;
 pub struct FungeInterpreter<'s> {
 	threads: ThreadList<'s>,
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
+	#[allow(dead_code)]
 	dialect_mode: FungeDialect,
+	#[allow(dead_code)]
 	code_source: CodeSource,
 	
 	charout: Stdout,
