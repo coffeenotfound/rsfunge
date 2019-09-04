@@ -134,6 +134,9 @@ impl<'s> FungeInterpreter<'s> {
 			
 			// Execute instruction
 			if (32 < instruction) && (instruction <= 126) {
+				// Get dims
+				const DIMS: u32 = 2; // TODO: Implement
+				
 				valid_instruction = true;
 				
 				match instruction {
@@ -161,26 +164,26 @@ impl<'s> FungeInterpreter<'s> {
 					/* < */ 60 => insts::inst_go_west(thread),
 					/* = */
 					/* > */ 62 => insts::inst_go_east(thread),
-					/* ? */ 63 => insts::inst_go_away(thread, self.dialect_mode),
+					/* ? */ 63 => insts::inst_go_away(thread, DIMS),
 					/* @ */ 64 => panic!("[[Stop instruction]]"),
 					/* -> (A...Z) */
-					/* [ */ 91 => valid_instruction = insts::inst_turn_left(thread, self.dialect_mode),
+					/* [ */ 91 => valid_instruction = insts::inst_turn_left(thread, DIMS),
 					/* \ */ 92 => insts::inst_swap(thread),
-					/* ] */ 93 => valid_instruction = insts::inst_turn_right(thread, self.dialect_mode),
-					/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, self.dialect_mode),
+					/* ] */ 93 => valid_instruction = insts::inst_turn_right(thread, DIMS),
+					/* ^ */ 94 => valid_instruction = insts::inst_go_north(thread, DIMS),
 					/* _ */ 95 => insts::inst_east_west_if(thread),
 					/* ` */ 96 => insts::inst_greater_than(thread),
 					/* -> (a...f) */
-					/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, self.dialect_mode),
-					/* h */ 104 => valid_instruction = insts::inst_go_high(thread, self.dialect_mode),
+					/* g */ 103 => insts::inst_get(thread, &mut self.funge_space, DIMS),
+					/* h */ 104 => valid_instruction = insts::inst_go_high(thread, DIMS),
 					/* i */
 					/* j */ 106 => insts::inst_jump_forward(thread),
 					/* k */
-					/* l */ 108 => valid_instruction = insts::inst_go_low(thread, self.dialect_mode),
-					/* m */ 109 => valid_instruction = insts::inst_high_low_if(thread, self.dialect_mode),
+					/* l */ 108 => valid_instruction = insts::inst_go_low(thread, DIMS),
+					/* m */ 109 => valid_instruction = insts::inst_high_low_if(thread, DIMS),
 					/* n */ 110 => insts::inst_clear_stack(thread),
 					/* o */
-					/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, self.dialect_mode),
+					/* p */ 112 => insts::inst_put(thread, &mut self.funge_space, DIMS),
 					/* q */ 113 => {
 						self.programatically_quit = true;
 						self.quit_exit_code = thread.stack_stack.pop();
@@ -189,13 +192,13 @@ impl<'s> FungeInterpreter<'s> {
 					/* s */ 115 => insts::inst_store_character(thread, &mut self.funge_space),
 					/* t */
 					/* u */ 117 => insts::inst_stack_under_stack(thread, self.dialect_mode),
-					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, self.dialect_mode),
-					/* w */ 119 => valid_instruction = insts::inst_compare(thread, self.dialect_mode),
-					/* x */ 120 => insts::inst_absolute_delta(thread, self.dialect_mode),
+					/* v */ 118 => valid_instruction = insts::inst_go_south(thread, DIMS),
+					/* w */ 119 => valid_instruction = insts::inst_compare(thread, DIMS),
+					/* x */ 120 => insts::inst_absolute_delta(thread, DIMS),
 					/* y */
 					/* z */ 122 => {/* No-op */}
 					/* { */
-					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, self.dialect_mode),
+					/* | */ 124 => valid_instruction = insts::inst_north_south_if(thread, DIMS),
 					/* } */
 					/* ~ */ 126 => insts::inst_input_character(thread, &mut self.charin),
 					

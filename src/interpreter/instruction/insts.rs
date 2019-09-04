@@ -1,5 +1,4 @@
 use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress, FungeDimension, FungeSpaceAccessor, FungeStack, InstructionPointer};
-use crate::FungeDialect;
 use rand::Rng;
 use std::io::{Stdout, Stdin, Read, Write};
 
@@ -159,28 +158,30 @@ pub fn inst_go_east(thread: &mut FungeThread) {
 
 /// 94: Go north (^)
 #[inline(always)]
-pub fn inst_go_north(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	return match dialect {
-		FungeDialect::Unefunge98 => false,
-		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+pub fn inst_go_north(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		1 => return false,
+		2 | 3 => {
 			// Set delta
 			thread.delta = InstructionDelta::new_xyz(0, -1, 0);
-			true
+			return true;
 		},
-	};
+		_ => return false,
+	}
 }
 
 /// 118: Go south (v)
 #[inline(always)]
-pub fn inst_go_south(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	return match dialect {
-		FungeDialect::Unefunge98 => false,
-		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+pub fn inst_go_south(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		1 => return false,
+		2 | 3 => {
 			// Set delta
 			thread.delta = InstructionDelta::new_xyz(0, 1, 0);
-			true
+			return true;
 		},
-	};
+		_ => return false,
+	}
 }
 
 /// 95: East west if (_)
@@ -200,10 +201,10 @@ pub fn inst_east_west_if(thread: &mut FungeThread) {
 
 /// 124: North south if (|)
 #[inline(always)]
-pub fn inst_north_south_if(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	return match dialect {
-		FungeDialect::Unefunge98 => false,
-		FungeDialect::Befunge93 | FungeDialect::Befunge98 | FungeDialect::Trefunge98 => {
+pub fn inst_north_south_if(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		1 => return false,
+		2 | 3 => {
 			let value = thread.stack_stack.pop();
 			
 			// If zero, go south (v)
@@ -214,40 +215,39 @@ pub fn inst_north_south_if(thread: &mut FungeThread, dialect: FungeDialect) -> b
 			else {
 				thread.delta = InstructionDelta::new_xyz(0, -1, 0);
 			}
-			true
+			return true;
 		}
-	};
+		_ => return false,
+	}
 }
 
 /// 63: Go away (?)
 #[inline(always)]
-pub fn inst_go_away(thread: &mut FungeThread, dialect: FungeDialect) {
+pub fn inst_go_away(thread: &mut FungeThread, dims: u32) {
 	let new_delta: InstructionDelta;
 	let mut rng = rand::thread_rng();
 	
 	// Create new random delta
-	match dialect {
-		// 1D
-		FungeDialect::Unefunge98 => {
+	match dims {
+		1 => {
 			const DIRS: [i32; 2] = [-1, 1];
 			
 			let dir = DIRS[rng.gen_range(0usize, DIRS.len())];
 			new_delta = InstructionDelta::new_xyz(dir, 0, 0);
 		}
-		// 2D
-		FungeDialect::Befunge93 | FungeDialect::Befunge98 => {
+		2 => {
 			const DIRS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 			
 			let dir = DIRS[rng.gen_range(0usize, DIRS.len())];
 			new_delta = InstructionDelta::new_xyz(dir.0, dir.1, 0);
 		}
-		// 3D
-		FungeDialect::Trefunge98 => {
+		3 => {
 			const DIRS: [(i32, i32, i32); 6] = [(-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1)];
 			
 			let dir = DIRS[rng.gen_range(0usize, DIRS.len())];
 			new_delta = InstructionDelta::new_xyz(dir.0, dir.1, dir.2);
 		}
+		_ => unimplemented!(),
 	}
 	
 	// Assign delta to thread
@@ -278,39 +278,40 @@ pub fn inst_swap(thread: &mut FungeThread) {
 }
 
 #[inline(always)]
-pub fn _pop_vector(toss: &mut FungeStack, dialect: FungeDialect) -> FungeAddress {
-	let vector = match dialect {
+pub fn _pop_vector(toss: &mut FungeStack, dims: u32) -> FungeAddress {
+	let vector = match dims {
 		// 1D
-		FungeDialect::Unefunge98 => {
+		1 => {
 			let x = toss.pop();
 			FungeAddress::new_xyz(x, 0, 0)
 		}
 		// 2D
-		FungeDialect::Befunge93 | FungeDialect::Befunge98 => {
+		2 => {
 			let y = toss.pop();
 			let x = toss.pop();
 			FungeAddress::new_xyz(x, y, 0)
 		}
 		// 3D
-		FungeDialect::Trefunge98 => {
+		3 => {
 			let z = toss.pop();
 			let y = toss.pop();
 			let x = toss.pop();
 			FungeAddress::new_xyz(x, y, z)
 		}
+		_ => unimplemented!(),
 	};
 	return vector;
 }
 
 /// 103: Get (g)
 #[inline(always)]
-pub fn inst_get<N, A>(thread: &mut FungeThread, funge_space: &mut FungeSpace<N, i32, A>, dialect: FungeDialect) 
+pub fn inst_get<N, A>(thread: &mut FungeThread, funge_space: &mut FungeSpace<N, i32, A>, dims: u32) 
 where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	let storage_offset = thread.get_storage_offset();
 	
 	// Pop vector
 	let toss = thread.stack_stack.top_stack();
-	let mut position = _pop_vector(toss, dialect);
+	let mut position = _pop_vector(toss, dims);
 	
 	// Add storage offset
 	position.add_wrapping(&storage_offset);
@@ -338,22 +339,22 @@ pub fn inst_jump_forward(thread: &mut FungeThread) {
 
 /// 104: Go high (h)
 #[inline(always)]
-pub fn inst_go_high(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Trefunge98 => {
+pub fn inst_go_high(thread: &mut FungeThread, dims: u32) -> bool {
+	return match dims {
+		3 => {
 			// Set delta
 			thread.delta = InstructionDelta::new_xyz(0, 0, 1);
-			return true;
+			true
 		}
-		_ => return false,
-	}
+		_ => false,
+	};
 }
 
 /// 108: Go low (l)
 #[inline(always)]
-pub fn inst_go_low(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Trefunge98 => {
+pub fn inst_go_low(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		3 => {
 			// Set delta
 			thread.delta = InstructionDelta::new_xyz(0, 0, -1);
 			return true;
@@ -364,9 +365,9 @@ pub fn inst_go_low(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
 
 /// 109: High low if (m)
 #[inline(always)]
-pub fn inst_high_low_if(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Trefunge98 => {
+pub fn inst_high_low_if(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		3 => {
 			let value = thread.stack_stack.pop();
 			
 			// If zero, act like go low (l)
@@ -392,13 +393,13 @@ pub fn inst_clear_stack(thread: &mut FungeThread) {
 
 /// 112: Put (p)
 #[inline(always)]
-pub fn inst_put<N, A>(thread: &mut FungeThread, funge_space: &mut FungeSpace<N, i32, A>, dialect: FungeDialect) 
+pub fn inst_put<N, A>(thread: &mut FungeThread, funge_space: &mut FungeSpace<N, i32, A>, dims: u32) 
 where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	let storage_offset = &thread.get_storage_offset();
 	
 	// Pop vector
 	let toss = thread.stack_stack.top_stack();
-	let mut position = _pop_vector(toss, dialect);
+	let mut position = _pop_vector(toss, dims);
 	
 	// Add storage offset
 	position.add_wrapping(storage_offset);
@@ -433,36 +434,35 @@ pub fn _rotate_delta_counterclockwise_90(delta: &mut InstructionDelta) {
 
 /// 91: Turn left ([)
 #[inline(always)]
-pub fn inst_turn_left(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Unefunge98 => return false,
-		_ => {
+pub fn inst_turn_left(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		2 | 3 => {
 			// Rotate delta 90° counter-clockwise
 			_rotate_delta_counterclockwise_90(&mut thread.delta);
 			return true;
 		}
+		_ => return false,
 	}
 }
 
 /// 93: Turn left (])
 #[inline(always)]
-pub fn inst_turn_right(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Unefunge98 => return false,
-		_ => {
+pub fn inst_turn_right(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		2 | 3 => {
 			// Rotate delta 90° clockwise
 			_rotate_delta_clockwise_90(&mut thread.delta);
 			return true;
 		}
+		_ => return false,
 	}
 }
 
 /// 119: Compare (w)
 #[inline(always)]
-pub fn inst_compare(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
-	match dialect {
-		FungeDialect::Unefunge98 => return false,
-		_ => {
+pub fn inst_compare(thread: &mut FungeThread, dims: u32) -> bool {
+	match dims {
+		2 | 3 => {
 			let (b, a) = thread.stack_stack.pop_two();
 			
 			// If a < b, act like turn left ([)
@@ -479,14 +479,15 @@ pub fn inst_compare(thread: &mut FungeThread, dialect: FungeDialect) -> bool {
 			
 			return true;
 		}
+		_ => return false,
 	}
 }
 
 /// 120: Absolute delta (x)
 #[inline(always)]
-pub fn inst_absolute_delta(thread: &mut FungeThread, dialect: FungeDialect) {
+pub fn inst_absolute_delta(thread: &mut FungeThread, dims: u32) {
 	// Pop delta vector
-	let new_delta: InstructionDelta = _pop_vector(thread.stack_stack.top_stack(), dialect);
+	let new_delta: InstructionDelta = _pop_vector(thread.stack_stack.top_stack(), dims);
 	
 	// Assign new delta to thread
 	thread.delta = new_delta;
