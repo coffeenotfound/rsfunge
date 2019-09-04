@@ -1,4 +1,6 @@
 #![allow(unused_parens)]
+#![allow(unused_variables)]
+
 #![feature(specialization)]
 #![feature(trait_alias)]
 
