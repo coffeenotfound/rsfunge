@@ -1,6 +1,8 @@
 # rsfunge
 
-rsfunge is mostly a learning project for me and it's still in developement.
+rsfunge is an interpreter written in Rust for Befunge-93 and the Funge-98 family of esoteric languages.
+
+Note that rsfunge is still under developement!
 
 Some features that are planned (or would be nice but require a lot of work):
 * Finish the implementation
@@ -10,3 +12,4 @@ Some features that are planned (or would be nice but require a lot of work):
 * Implement standard fingerprints
 * Actually support Befunge93 (via constexprs and generics to make it fast)
 * Maybe (really big maybe) implement a simple JIT
+
