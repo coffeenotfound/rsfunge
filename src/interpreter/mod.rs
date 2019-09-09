@@ -11,6 +11,7 @@ mod funge_value;
 mod thread_list;
 
 pub mod instruction;
+pub mod fingerprint;
 
 pub use funge_interpreter::*;
 pub use funge_thread::*;
