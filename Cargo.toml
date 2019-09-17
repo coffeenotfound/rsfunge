@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["katzer"]
 edition = "2018"
 
+[profile.release]
+opt-level = 3
+debug = false
+
 [dependencies]
 typenum = "1.10.0"
 clap = "2.33.0"
