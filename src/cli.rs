@@ -7,6 +7,10 @@ use crate::{utils, FungeDialect};
 use crate::interpreter::FungeInterpreter;
 use crate::io::{CodeLoader, CodeSource};
 use std::io::{stdin, stdout};
+use std::rc::Rc;
+use crate::interpreter::fingerprint::{FingerprintRegistry};
+use crate::interpreter::fingerprint::standard::{create_null_fingerprint};
+use std::cell::RefCell;
 
 //pub type ArgumentError = GenericError<S>;#
 #[derive(Debug)]
@@ -49,10 +53,16 @@ pub fn start() -> i32 {
 		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
 	}
 	
+	// Make fingerprint registry
+	let fingerprint_registry_ref = Rc::new(RefCell::new(FingerprintRegistry::new()));
+	
+	// Register standard fingerprints
+	fingerprint_registry_ref.borrow_mut().register_fingerprint(Rc::from(create_null_fingerprint()));
+	
 	// Create interpreter
 	let charout = stdout();
 	let charin = stdin();
-	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, charout, charin);
+	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, fingerprint_registry_ref, charout, charin);
 	
 	// Load inital code into interpreter
 	interpreter.load_initial_code(&code_buffer.unwrap());
