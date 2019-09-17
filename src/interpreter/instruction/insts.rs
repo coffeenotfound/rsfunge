@@ -804,6 +804,8 @@ pub fn inst_load_semantics<'f>(thread: &mut FungeThread<'_, 'f>, dims: u32, fing
 /// 41: Unload semantics ())
 #[inline(always)]
 pub fn inst_unload_semantics<'f>(thread: &mut FungeThread<'_, 'f>, dims: u32, fingerprint_registry: &'_ RefCell<FingerprintRegistry<'f>>) {
+	let toss = &mut thread.stack_stack;
+	
 	// Pop count
 	let count = toss.pop();
 	
