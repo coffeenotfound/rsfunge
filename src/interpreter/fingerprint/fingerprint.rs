@@ -1,15 +1,9 @@
+use crate::interpreter::fingerprint::{FingerprintName, FingerprintInstFunction};
 
-pub struct Fingerprint {
-	name: [u8; 4],
-	id: u32,
-}
-
-impl Fingerprint {
-	pub fn get_name(&self) -> &[u8; 4] {
-		&self.name
-	}
+pub trait Fingerprint<'f> {
+	fn get_name(&self) -> FingerprintName
+	;
 	
-	pub fn get_id(&self) -> u32 {
-		self.id
-	}
+	fn get_alphabet_instructions(&self, dest: &mut [Option<&'f FingerprintInstFunction>; 26])
+	;
 }
