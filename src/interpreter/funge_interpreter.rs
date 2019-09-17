@@ -6,6 +6,10 @@ use std::io::{Stdin, Stdout};
 use std::num::Wrapping;
 use crate::FungeDialect;
 use std::env;
+use crate::interpreter::fingerprint::FingerprintRegistry;
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::borrow::Borrow;
 
 /// The handprint of rsfunge, "RSFN"
 pub const RSFUNGE_HANDPRINT: u32 = 0x5253464e;
@@ -13,13 +17,15 @@ pub const RSFUNGE_VERSION: u32 = 100;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
-pub struct FungeInterpreter<'s> {
-	threads: ThreadList<'s>,
+pub struct FungeInterpreter<'s, 'f> {
+	threads: ThreadList<'s, 'f>,
 	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
 	#[allow(dead_code)]
 	dialect_mode: FungeDialect,
 	#[allow(dead_code)]
 	code_source: CodeSource,
+	
+	fingerprint_registry: Rc<RefCell<FingerprintRegistry<'f>>>,
 	
 	charout: Stdout,
 	charin: Stdin,
@@ -34,8 +40,8 @@ pub struct FungeInterpreter<'s> {
 	cli_arg_string: Vec<u8>,
 }
 
-impl<'s> FungeInterpreter<'s> {
-	pub fn new(code_source: CodeSource, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
+impl<'s, 'f> FungeInterpreter<'s, 'f> {
+	pub fn new(code_source: CodeSource, fingerprint_registry: Rc<RefCell<FingerprintRegistry<'f>>>, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
 		// Build cli arg string // TODO: Include real (after --) given cli args aswell
 		let mut cli_arg_string = Vec::from(code_source.get_path().file_stem().unwrap().to_os_string().into_string().unwrap().as_bytes());
 		cli_arg_string.push(0); // Null terminate program name
@@ -50,6 +56,8 @@ impl<'s> FungeInterpreter<'s> {
 			funge_space: FungeSpace::new(),
 			dialect_mode: code_source.get_dialect(),
 			code_source,
+			
+			fingerprint_registry,
 			
 			charout,
 			charin,
