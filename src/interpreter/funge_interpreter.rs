@@ -179,8 +179,8 @@ impl<'s, 'f> FungeInterpreter<'s, 'f> {
 					/* % */ 37 => insts::inst_remainder(thread),
 					/* & */
 					/* ' */ 39 => insts::inst_fetch_character(thread, &mut self.funge_space),
-					/* ( */
-					/* ) */
+					/* ( */ 40 => insts::inst_load_semantics(thread, DIMS, self.fingerprint_registry.borrow()),
+					/* ) */ 41 => insts::inst_unload_semantics(thread, DIMS, self.fingerprint_registry.borrow()),
 					/* * */ 42 => insts::inst_multiply(thread),
 					/* + */ 43 => insts::inst_add(thread),
 					/* , */ 44 => insts::inst_output_char(thread, &mut self.charout),

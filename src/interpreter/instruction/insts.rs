@@ -2,6 +2,8 @@ use crate::interpreter::{FungeThread, InstructionDelta, FungeSpace, FungeAddress
 use rand::Rng;
 use std::io::{Stdout, Stdin, Read, Write};
 use chrono::{DateTime, Local, Datelike, Timelike};
+use crate::interpreter::fingerprint::FingerprintRegistry;
+use std::cell::RefCell;
 
 /// 33: Logical not (!)
 #[inline(always)]
@@ -761,4 +763,56 @@ pub fn inst_end_block(thread: &mut FungeThread, dims: u32) {
 	else {
 		_reflect_delta(&mut thread.delta);
 	}
+}
+
+// Note: The spec is not very clear about how the load/unload semantics insts work, so we will implement them as follows:
+// 'Load semantics' loads a counted-string, calcs the fingerprint id (fid) and tries to load the fingerprint (from the registry in this case).
+// If it can't it acts like 'r'. If it can, it pushes the fid, then a 1 onto the toss, overloads the given alphabet instructions and
+// and pushes the fingerprint onto the (only internally used) fingerprint stack.
+// 'Unload semantics' pops a counted string (which might just be fingerprint id then a 1) from the stack and completely ignores it.
+// If there is atleast one fingerprint on the fingerprint stack, it pops the top most fingerprint off and un-overloads the alphabet instructions.
+// Else if no fingerprint is on the fingerprint stack, it does nothing.
+
+/// 40: Load semantics (()
+#[inline(always)]
+pub fn inst_load_semantics<'f>(thread: &mut FungeThread<'_, 'f>, dims: u32, fingerprint_registry: &'_ RefCell<FingerprintRegistry<'f>>) {
+	let toss = &mut thread.stack_stack;
+	
+	// Pop count
+	let count = toss.pop();
+	
+	// Pop fingerprint id (with explicit overflow wrapping)
+	let mut fid: u32 = 0;
+	for _ in 0..count {
+		fid = fid.wrapping_mul(256u32).wrapping_add(toss.pop() as u32);
+	}
+	
+	// Try to get fingerprint from registry
+	let mut registry = fingerprint_registry.borrow_mut();
+	let fingerprint = registry.find_fingerprint(fid);
+	
+	if let Some(fp) = fingerprint {
+		// Push fingerprint
+		thread.alphabet_inst_table.push_fingerprint(fp);
+	}
+	else {
+		// Act like 'r'
+		_reflect_delta(&mut thread.delta);
+	}
+}
+
+/// 41: Unload semantics ())
+#[inline(always)]
+pub fn inst_unload_semantics<'f>(thread: &mut FungeThread<'_, 'f>, dims: u32, fingerprint_registry: &'_ RefCell<FingerprintRegistry<'f>>) {
+	// Pop count
+	let count = toss.pop();
+	
+	// Pop fingerprint id (with explicit overflow wrapping)
+	let mut fid: u32 = 0;
+	for _ in 0..count {
+		fid = fid.wrapping_mul(256u32).wrapping_add(toss.pop() as u32);
+	}
+	
+	// Try to pop fingerprint
+	let _ = thread.alphabet_inst_table.pop_fingerprint();
 }
