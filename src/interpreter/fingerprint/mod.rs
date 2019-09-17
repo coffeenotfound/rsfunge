@@ -10,3 +10,5 @@ pub use simple_fingerprint::*;
 pub use fingerprint_name::*;
 pub use fingerprint_registry::*;
 pub use fingerprint_inst_function::*;
+
+pub mod standard;
