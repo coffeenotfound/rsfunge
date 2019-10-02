@@ -13,7 +13,7 @@ use std::borrow::Borrow;
 
 /// The handprint of rsfunge, "RSFN"
 pub const RSFUNGE_HANDPRINT: u32 = 0x5253464e;
-pub const RSFUNGE_VERSION: u32 = 100;
+pub const RSFUNGE_VERSION: u32 = 010000;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
