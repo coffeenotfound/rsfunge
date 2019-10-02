@@ -1,4 +1,4 @@
-use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList, FungeThread};
+use crate::interpreter::{FungeAddress, FungeDim2, FungeSpace, SpaceAccessorDim2, ThreadList, FungeThread, FungeDimension, FungeSpaceAccessor};
 use crate::io::{CodeBuffer, CodeSource, LineTerminator};
 use crate::vector::Vector3;
 use crate::interpreter::instruction::insts;
@@ -17,9 +17,9 @@ pub const RSFUNGE_VERSION: u32 = 100;
 
 /// Interpreter for funge*.
 /// Instances directly contain the interpretation state.
-pub struct FungeInterpreter<'s, 'f> {
+pub struct FungeInterpreter<'s, 'f, N, A> where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
 	threads: ThreadList<'s, 'f>,
-	funge_space: FungeSpace<'s, FungeDim2, i32, SpaceAccessorDim2<i32>>,
+	funge_space: FungeSpace<'s, N, i32, A>,
 	#[allow(dead_code)]
 	dialect_mode: FungeDialect,
 	#[allow(dead_code)]
@@ -40,12 +40,12 @@ pub struct FungeInterpreter<'s, 'f> {
 	cli_arg_string: Vec<u8>,
 }
 
-impl<'s, 'f> FungeInterpreter<'s, 'f> {
-	pub fn new(code_source: CodeSource, fingerprint_registry: Rc<RefCell<FingerprintRegistry<'f>>>, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
+impl<'s, 'f, N, A> FungeInterpreter<'s, 'f, N, A> where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
+	pub fn new(dialect_mode: FungeDialect, code_source: CodeSource, fingerprint_registry: Rc<RefCell<FingerprintRegistry<'f>>>, charout: Stdout, charin: Stdin) -> Self { //charout: &'io mut dyn Write, charin: &'io mut dyn Read
 		// Build cli arg string // TODO: Include real (after --) given cli args aswell
 		let mut cli_arg_string = Vec::from(code_source.get_path().file_stem().unwrap().to_os_string().into_string().unwrap().as_bytes());
 		cli_arg_string.push(0); // Null terminate program name
-		(|s: &mut Vec<u8>| { s.push(0); s.push(0); })(&mut cli_arg_string); // Double null terminate arg string
+		cli_arg_string.push(0); cli_arg_string.push(0); // Double null terminate arg string
 		
 		// Build env var string
 		let env_var_string = Self::make_env_var_string();
@@ -54,7 +54,7 @@ impl<'s, 'f> FungeInterpreter<'s, 'f> {
 		let mut interpreter = FungeInterpreter {
 			threads: ThreadList::new(),
 			funge_space: FungeSpace::new(),
-			dialect_mode: code_source.get_dialect(),
+			dialect_mode,
 			code_source,
 			
 			fingerprint_registry,
