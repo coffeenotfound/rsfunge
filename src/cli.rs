@@ -3,7 +3,7 @@ use std::error;
 use std::fmt::{self, Display};
 use std::path::PathBuf;
 use clap::{self, Arg};
-use crate::{utils, FungeDialect};
+use crate::{FungeDialect};
 use crate::interpreter::FungeInterpreter;
 use crate::io::{CodeLoader, CodeSource};
 use std::io::{stdin, stdout};
@@ -11,6 +11,7 @@ use std::rc::Rc;
 use crate::interpreter::fingerprint::{FingerprintRegistry};
 use crate::interpreter::fingerprint::standard::{create_null_fingerprint};
 use std::cell::RefCell;
+use crate::utils::humanize;
 
 //pub type ArgumentError = GenericError<S>;#
 #[derive(Debug)]
