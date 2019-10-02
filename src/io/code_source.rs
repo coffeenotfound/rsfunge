@@ -4,11 +4,11 @@ use crate::FungeDialect;
 #[derive(Clone)]
 pub struct CodeSource {
 	path: PathBuf,
-	dialect: FungeDialect,
+	dialect: Option<FungeDialect>,
 }
 
 impl CodeSource {
-	pub fn new(path: PathBuf, dialect: FungeDialect) -> Self {
+	pub fn new(path: PathBuf, dialect: Option<FungeDialect>) -> Self {
 		CodeSource {
 			path,
 			dialect,
@@ -19,7 +19,7 @@ impl CodeSource {
 		self.path.as_path()
 	}
 	
-	pub fn get_dialect(&self) -> FungeDialect {
+	pub fn get_dialect(&self) -> Option<FungeDialect> {
 		self.dialect
 	}
 }
