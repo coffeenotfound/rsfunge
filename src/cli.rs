@@ -4,7 +4,7 @@ use std::fmt::{self, Display};
 use std::path::PathBuf;
 use clap::{self, Arg};
 use crate::{FungeDialect};
-use crate::interpreter::FungeInterpreter;
+use crate::interpreter::{FungeInterpreter, FungeSpaceAccessor, FungeDimension, FungeDim2, FungeDim3, SpaceAccessorDim2, SpaceAccessorDim3};
 use crate::io::{CodeLoader, CodeSource};
 use std::io::{stdin, stdout};
 use std::rc::Rc;
@@ -44,46 +44,23 @@ pub fn start() -> i32 {
 		return -1;
 	}
 	
-	// Load inital code
-	let code_source = CodeSource::new(run_options.source_file, FungeDialect::Befunge98); // TODO: Use proper dialect
-	
-	let mut loader = CodeLoader::new();
-	let code_buffer = loader.load_from_file(code_source.clone());
-	
-	if let Err(e) = code_buffer {
-		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
-	}
-	
-	// Make fingerprint registry
-	let fingerprint_registry_ref = Rc::new(RefCell::new(FingerprintRegistry::new()));
-	
-	// Register standard fingerprints
-	fingerprint_registry_ref.borrow_mut().register_fingerprint(Rc::from(create_null_fingerprint()));
-	
-	// Create interpreter
-	let charout = stdout();
-	let charin = stdin();
-	let mut interpreter: FungeInterpreter = FungeInterpreter::new(code_source, fingerprint_registry_ref, charout, charin);
-	
-	// Load inital code into interpreter
-	interpreter.load_initial_code(&code_buffer.unwrap());
-	
-	// Transfer control to interpreter and start execution
-	interpreter.start_execution();
+	// Run interpreter
+	let dialect_mode: FungeDialect = FungeDialect::Befunge98;
+	let res = match dialect_mode {
+		FungeDialect::Befunge93 => run_interpreter::<FungeDim2, SpaceAccessorDim2<i32>>(run_options),
+//		FungeDialect::Unefunge98 => run_interpreter::<FungeDim1, SpaceAccessorDim1<i32>>(run_options),
+		FungeDialect::Befunge98 => run_interpreter::<FungeDim2, SpaceAccessorDim2<i32>>(run_options),
+		FungeDialect::Trefunge98 => run_interpreter::<FungeDim3, SpaceAccessorDim3<i32>>(run_options),
+		_ => unimplemented!(),
+	};
 	
 	// Exit with exit code
-	let exit_code = if let Some(code) = interpreter.get_programmatic_exit_code() {
-		code
-	}
-	else {
-		0
-	};
-	return exit_code;
+	return res.0;
 }
 
 fn parse_cli() -> Result<RunOptions, impl error::Error> {
 	// Construct cli
-	let dialect_list = utils::format_humaized_list(vec!["TEST", "WORLD"].as_slice());
+	let dialect_list = humanize::format_humaized_list(vec!["TEST", "WORLD"].as_slice());
 	let dialect_help: String = format!("Which dialect of Funge to use ({})", dialect_list);
 	
 	let cli = clap::App::new("rsfunge")
@@ -108,8 +85,23 @@ fn parse_cli() -> Result<RunOptions, impl error::Error> {
 			return Err(ArgError::new(String::from("Failed to parse")));
 		}
 		
-		// TODO: Parse dialect
 		// TODO: Parse rest of options
+		
+		// Parse dialect options
+		let dialect_mode: DialectOption = if let Some(dialect_name) = matches.value_of("dialect") {
+			match dialect_name {
+				"b93" | "befunge93" => DialectOption::Specific(FungeDialect::Befunge93),
+				"u98" | "unefunge98" => DialectOption::Specific(FungeDialect::Unefunge98),
+				"b98" | "befunge98" => DialectOption::Specific(FungeDialect::Befunge98),
+				"t98" | "trefunge98" => DialectOption::Specific(FungeDialect::Trefunge98),
+				other => {
+					return Err(ArgError::new(String::from(format!("Unknown funge dialect '{}'", other))));
+				}
+			}
+		}
+		else {
+			DialectOption::Unknown
+		};
 		
 		// Get source file path
 		let source_file = {
@@ -123,6 +115,7 @@ fn parse_cli() -> Result<RunOptions, impl error::Error> {
 		
 		// Make options object
 		let options = RunOptions {
+			dialect_mode,
 			source_file,
 		};
 		return Ok(options);
@@ -143,8 +136,51 @@ fn parse_cli() -> Result<RunOptions, impl error::Error> {
 	}
 }
 
+fn run_interpreter<N, A>(run_options: RunOptions) -> (i32,) where N: FungeDimension, A: FungeSpaceAccessor<N, i32> {
+	// Load inital code
+	let code_source = CodeSource::new(run_options.source_file, match run_options.dialect_mode {DialectOption::Specific(d) => Some(d), _ => None});
+	
+	let mut loader = CodeLoader::new();
+	let code_buffer = loader.load_from_file(code_source.clone());
+	
+	if let Err(e) = code_buffer {
+		panic!("Failed to load code from file: \"{}\" ({})", code_source.get_path().display(), e);
+	}
+	
+	// Get actual dialect
+	let actual_dialect: FungeDialect = if let DialectOption::Specific(d) = run_options.dialect_mode {d}
+	else {
+		// TODO: Implement dialect probing
+		unimplemented!();
+	};
+	
+	// Make fingerprint registry
+	let fingerprint_registry_ref = Rc::new(RefCell::new(FingerprintRegistry::new()));
+	
+	// Register standard fingerprints
+	fingerprint_registry_ref.borrow_mut().register_fingerprint(Rc::from(create_null_fingerprint()));
+	
+	// Create interpreter
+	let charout = stdout();
+	let charin = stdin();
+	let mut interpreter: FungeInterpreter<N, A> = FungeInterpreter::new(actual_dialect, code_source, fingerprint_registry_ref, charout, charin);
+	
+	// Load inital code into interpreter
+	interpreter.load_initial_code(&code_buffer.unwrap());
+	
+	// Transfer control to interpreter and start execution
+	interpreter.start_execution();
+	
+	// Exit with exit code
+	let exit_code = if let Some(code) = interpreter.get_programmatic_exit_code() {code}
+	else {0};
+	
+	return (exit_code,);
+}
+
 pub struct RunOptions {
 	source_file: PathBuf,
+	dialect_mode: DialectOption,
 }
 
 pub enum DialectOption {
